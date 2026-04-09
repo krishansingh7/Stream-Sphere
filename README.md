@@ -1,16 +1,68 @@
-# React + Vite
+# YouTube Clone — React + TailwindCSS + Firebase
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fully functional YouTube clone built with React 18, TailwindCSS, Redux Toolkit, React Query, and Firebase.
 
-Currently, two official plugins are available:
+## Features
+- 🏠 Home page with trending videos + category filter pills
+- 🔍 Search with debouncing (300ms) + voice search (Web Speech API)
+- 📺 Watch page with YouTube player, video info, like/save actions
+- 💬 Comments section with infinite scroll
+- 📺 Related videos sidebar
+- 📺 Channel page with banner, stats, videos
+- 🕐 Watch history (Firebase)
+- 👍 Liked videos (Firebase)
+- 🕒 Watch later (Firebase)
+- 🔒 Google authentication (Firebase)
+- ♾️ Infinite scroll on all pages
+- 💀 Skeleton loaders
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Setup
 
-## React Compiler
+### 1. Clone and install
+```bash
+npm install
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 2. Create your `.env` file
+Copy `.env.example` to `.env` and fill in your keys:
+```bash
+cp .env.example .env
+```
 
-## Expanding the ESLint configuration
+### 3. Get your YouTube API key
+- Go to [Google Cloud Console](https://console.cloud.google.com)
+- Create a project → Enable **YouTube Data API v3**
+- Credentials → Create API Key
+- Paste into `VITE_YOUTUBE_API_KEY`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 4. Setup Firebase
+- Go to [Firebase Console](https://console.firebase.google.com)
+- Create project → Add web app
+- Enable **Authentication** → Google provider
+- Enable **Firestore Database** (start in test mode)
+- Copy config values into your `.env`
+
+### 5. Run
+```bash
+npm run dev
+```
+
+## Project Structure
+```
+src/
+├── config/         Firebase, React Query, constants
+├── services/       YouTube API + Firebase service functions
+├── store/          Redux slices (auth, ui, search)
+├── hooks/          API hooks (React Query) + Firebase hooks + utils
+├── context/        AuthContext
+├── components/     UI components (layout, video, player, comments, auth)
+├── pages/          Home, Watch, Search, Channel, History, Liked, WatchLater
+└── utils/          Formatters, query keys
+```
+
+## API Quota Notes
+- Daily free quota: **10,000 units**
+- `search.list` = 100 units (debounced to protect quota)
+- `videos.list` = 1 unit (trending, details)
+- `commentThreads.list` = 1 unit
+- All results cached with React Query (30 min for trending)
