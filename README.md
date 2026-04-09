@@ -12,6 +12,7 @@ A fully functional YouTube clone built with React 18, TailwindCSS, Redux Toolkit
 - 🕐 Watch history (Firebase)
 - 👍 Liked videos (Firebase)
 - 🕒 Watch later (Firebase)
+- ▶️ Playlist (Firebase)
 - 🔒 Google authentication (Firebase)
 - ♾️ Infinite scroll on all pages
 - 💀 Skeleton loaders
