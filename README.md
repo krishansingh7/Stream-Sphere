@@ -1,4 +1,4 @@
-# YouTube Clone — React + TailwindCSS + Firebase
+# Stream Sphere -> YouTube Clone — React + TailwindCSS + Firebase
 
 A fully functional YouTube clone built with React 18, TailwindCSS, Redux Toolkit, React Query, and Firebase.
 
