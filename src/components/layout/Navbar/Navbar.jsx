@@ -239,8 +239,35 @@ export default function Navbar() {
                 onKeyDown={handleKeyDown}
                 placeholder="Search"
                 autoComplete="off"
-                className="flex-1 bg-yt-bg px-5 text-sm text-yt-text placeholder-yt-text3 outline-none rounded-l-full"
+                className="flex-1 bg-yt-bg px-5 pr-2 text-sm text-yt-text placeholder-yt-text3 outline-none rounded-l-full"
               />
+              {/* ✕ Clear button — only shows when input has text */}
+              {inputVal && (
+                <button
+                  type="button"
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setInputVal("");
+                    searchQueryRef.current = "";
+                    setSuggestions([]);
+                    setShowSuggestions(false);
+                    setActiveIndex(-1);
+                    clearTimeout(window._searchDebounce);
+                    setDebouncedQuery("");
+                    inputRef.current?.focus();
+                  }}
+                  className="flex-shrink-0 w-8 h-8 self-center mr-1 flex items-center justify-center rounded-full hover:bg-yt-bg3 text-yt-text2 transition-colors"
+                  title="Clear"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  </svg>
+                </button>
+              )}
               <button
                 type="submit"
                 className="px-5 bg-yt-bg2 rounded-r-full hover:bg-yt-bg3 transition-colors flex items-center justify-center border-l border-yt-border"

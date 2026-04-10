@@ -6,6 +6,7 @@ import Spinner from "./components/common/Spinner";
 
 const Home = lazy(() => import("./pages/Home/Home"));
 const Watch = lazy(() => import("./pages/Watch/Watch"));
+const Trending = lazy(() => import("./pages/Trending/Trending"));
 const Search = lazy(() => import("./pages/Search/Search"));
 const Channel = lazy(() => import("./pages/Channel/Channel"));
 const History = lazy(() => import("./pages/History/History"));
@@ -29,6 +30,7 @@ export default function App() {
           <Route element={<AppLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/watch" element={<Watch />} />
+            <Route path="/trending" element={<Trending />} />
             <Route path="/search" element={<Search />} />
             <Route path="/channel/:channelId" element={<Channel />} />
             <Route

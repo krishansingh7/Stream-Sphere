@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import {
   collection,
@@ -17,15 +17,28 @@ export const useWatchLater = () => {
   const { user, loading: authLoading } = useSelector((s) => s.auth);
   const [watchLater, setWatchLater] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const unsubRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user?.uid || !isFirebaseConfigured || !db) {
+
+    if (!user?.uid) {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
       setWatchLater([]);
       setIsLoading(false);
       return;
     }
 
+    if (!isFirebaseConfigured || !db) {
+      setWatchLater([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     const ref = collection(
       db,
       FIRESTORE.USERS,
@@ -34,20 +47,24 @@ export const useWatchLater = () => {
     );
     const q = query(ref, orderBy("savedAt", "desc"));
 
-    setIsLoading(true);
-    const unsub = onSnapshot(
+    unsubRef.current = onSnapshot(
       q,
       (snap) => {
         setWatchLater(snap.docs.map((d) => d.data()));
         setIsLoading(false);
       },
       (err) => {
-        console.error("[Firestore] WatchLater error:", err.message);
+        console.error("[WatchLater]", err.message);
         setIsLoading(false);
       },
     );
 
-    return unsub;
+    return () => {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+    };
   }, [user?.uid, authLoading]);
 
   const saveToWatchLater = useCallback(
@@ -59,7 +76,7 @@ export const useWatchLater = () => {
           { ...video, savedAt: serverTimestamp() },
         );
       } catch (e) {
-        console.error("[WatchLater] add error:", e.message);
+        console.error("[WatchLater add]", e.message);
       }
     },
     [user?.uid],
@@ -73,7 +90,7 @@ export const useWatchLater = () => {
           doc(db, FIRESTORE.USERS, user.uid, FIRESTORE.WATCH_LATER, videoId),
         );
       } catch (e) {
-        console.error("[WatchLater] remove error:", e.message);
+        console.error("[WatchLater remove]", e.message);
       }
     },
     [user?.uid],
@@ -85,12 +102,19 @@ export const useWatchLater = () => {
 export const useIsInWatchLater = (videoId) => {
   const { user, loading: authLoading } = useSelector((s) => s.auth);
   const [saved, setSaved] = useState(false);
+  const unsubRef = useRef(null);
 
   useEffect(() => {
+    if (unsubRef.current) {
+      unsubRef.current();
+      unsubRef.current = null;
+    }
+
     if (authLoading || !user?.uid || !videoId || !isFirebaseConfigured || !db) {
       setSaved(false);
       return;
     }
+
     const ref = doc(
       db,
       FIRESTORE.USERS,
@@ -98,8 +122,14 @@ export const useIsInWatchLater = (videoId) => {
       FIRESTORE.WATCH_LATER,
       videoId,
     );
-    const unsub = onSnapshot(ref, (snap) => setSaved(snap.exists()));
-    return unsub;
+    unsubRef.current = onSnapshot(ref, (snap) => setSaved(snap.exists()));
+
+    return () => {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+    };
   }, [user?.uid, videoId, authLoading]);
 
   return saved;

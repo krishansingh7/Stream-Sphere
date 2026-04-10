@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
 import { signInWithGoogle } from "../../../services/firebase";
-import { usePlaylist } from "../../../hooks/firebase/usePlaylist";
+import { useUserData } from "../../../context/UserDataContext";
 import toast from "react-hot-toast";
 
 const HomeIcon = () => (
@@ -162,7 +162,7 @@ export default function Sidebar() {
   const { sidebarOpen } = useSelector((s) => s.ui);
   const { user } = useSelector((s) => s.auth);
   const navigate = useNavigate();
-  const { playlist } = usePlaylist();
+  const { playlist } = useUserData();
   const playlistCount = playlist.length;
 
   const handleProtected = (path) => {

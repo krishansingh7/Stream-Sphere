@@ -3,6 +3,7 @@ import CommentItem from './CommentItem'
 import CommentForm from './CommentForm'
 import InfiniteScrollTrigger from '../common/InfiniteScrollTrigger'
 import Spinner from '../common/Spinner'
+import { formatCount } from '../../utils/formatters'
 
 export default function CommentSection({ videoId, commentCount }) {
   const {
@@ -19,14 +20,18 @@ export default function CommentSection({ videoId, commentCount }) {
   return (
     <div className="mt-6">
       <h3 className="text-lg font-medium text-yt-text mb-4">
-        {commentCount ? `${parseInt(commentCount).toLocaleString()} Comments` : 'Comments'}
+        {commentCount
+          ? `${formatCount(parseInt(commentCount)).toLocaleString()} Comments`
+          : "Comments"}
       </h3>
 
       <CommentForm videoId={videoId} onCommentPosted={refetch} />
 
       <div className="divide-y divide-yt-border/30">
         {isLoading ? (
-          <div className="py-8"><Spinner /></div>
+          <div className="py-8">
+            <Spinner />
+          </div>
         ) : (
           comments.map((comment) => (
             <CommentItem key={comment.id} comment={comment} />
@@ -40,5 +45,5 @@ export default function CommentSection({ videoId, commentCount }) {
         hasNextPage={hasNextPage}
       />
     </div>
-  )
+  );
 }

@@ -6,18 +6,10 @@ import {
   formatCount,
   formatSubscribers,
   timeAgo,
+  toFirestoreVideo,
 } from "../../utils/formatters";
-import {
-  useIsLiked,
-  useLikedVideos,
-} from "../../hooks/firebase/useLikedVideos";
-import {
-  useIsInWatchLater,
-  useWatchLater,
-} from "../../hooks/firebase/useWatchLater";
-import { usePlaylist } from "../../hooks/firebase/usePlaylist";
+import { useUserData } from "../../context/UserDataContext";
 import { useChannelDetails } from "../../hooks/api/useChannelDetails";
-import { toFirestoreVideo } from "../../utils/formatters";
 import { signInWithGoogle } from "../../services/firebase";
 import toast from "react-hot-toast";
 
@@ -26,19 +18,24 @@ export default function VideoInfo({ video }) {
   const { user } = useSelector((s) => s.auth);
   const [expanded, setExpanded] = useState(false);
 
+  const {
+    likeVideo,
+    unlikeVideo,
+    isLiked,
+    saveToWatchLater,
+    removeFromWatchLater,
+    isInWatchLater,
+    addToPlaylist,
+    removeFromPlaylist,
+    isInPlaylist,
+  } = useUserData();
+
   const { snippet, statistics } = video;
   const videoId = video.id?.videoId || video.id;
 
-  const isLiked = useIsLiked(videoId);
-  const isSaved = useIsInWatchLater(videoId);
-  const { likeVideo, unlikeVideo } = useLikedVideos();
-  const { saveToWatchLater, removeFromWatchLater } = useWatchLater();
-  const {
-    add: addToPlaylist,
-    remove: removeFromPlaylist,
-    isInPlaylist,
-  } = usePlaylist();
-  const inPlaylist = isInPlaylist(videoId);
+  const liked = isLiked(videoId);
+  const saved = isInWatchLater(videoId);
+  const inPl = isInPlaylist(videoId);
 
   const { data: channelData } = useChannelDetails(snippet?.channelId);
   const subscriberCount = channelData?.statistics?.subscriberCount;
@@ -55,7 +52,7 @@ export default function VideoInfo({ video }) {
   const handleLike = () =>
     requireAuth(() => {
       const fv = toFirestoreVideo(video);
-      if (isLiked) {
+      if (liked) {
         unlikeVideo(videoId);
         toast.success("Removed from liked videos");
       } else {
@@ -67,7 +64,7 @@ export default function VideoInfo({ video }) {
   const handleSave = () =>
     requireAuth(() => {
       const fv = toFirestoreVideo(video);
-      if (isSaved) {
+      if (saved) {
         removeFromWatchLater(videoId);
         toast.success("Removed from Watch Later");
       } else {
@@ -79,12 +76,12 @@ export default function VideoInfo({ video }) {
   const handlePlaylist = () =>
     requireAuth(() => {
       const fv = toFirestoreVideo(video);
-      if (inPlaylist) {
+      if (inPl) {
         removeFromPlaylist(videoId);
         toast.success("Removed from playlist");
       } else {
         addToPlaylist(fv);
-        toast.success("Added to playlist! View in Playlist");
+        toast.success("Added to playlist");
       }
     });
 
@@ -97,14 +94,12 @@ export default function VideoInfo({ video }) {
 
   return (
     <div className="mt-3">
-      {/* Title */}
       <h1 className="text-lg font-semibold text-yt-text leading-snug">
         {snippet?.title}
       </h1>
 
-      {/* Channel + actions row */}
       <div className="flex flex-wrap items-center justify-between gap-3 mt-3">
-        {/* LEFT: avatar + name + sub count + subscribe */}
+        {/* Channel */}
         <div className="flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 cursor-pointer bg-yt-bg3"
@@ -144,22 +139,18 @@ export default function VideoInfo({ video }) {
           </button>
         </div>
 
-        {/* RIGHT: action buttons */}
+        {/* Actions */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Like + Dislike pill */}
+          {/* Like + Dislike */}
           <div className="flex items-center bg-yt-bg2 rounded-full overflow-hidden">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-1.5 pl-4 pr-3 py-2 text-sm font-medium transition-colors border-r border-yt-border ${
-                isLiked
-                  ? "text-yt-text bg-yt-hover"
-                  : "text-yt-text hover:bg-yt-hover"
-              }`}
+              className={`flex items-center gap-1.5 pl-4 pr-3 py-2 text-sm font-medium transition-colors border-r border-yt-border ${liked ? "text-yt-text bg-yt-hover" : "text-yt-text hover:bg-yt-hover"}`}
             >
               <svg
                 className="w-5 h-5"
                 viewBox="0 0 24 24"
-                fill={isLiked ? "currentColor" : "none"}
+                fill={liked ? "currentColor" : "none"}
                 stroke="currentColor"
                 strokeWidth="2"
               >
@@ -191,56 +182,47 @@ export default function VideoInfo({ video }) {
             Share
           </button>
 
-          {/* Save / Watch Later */}
+          {/* Save */}
           <button
             onClick={handleSave}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              isSaved
-                ? "bg-yt-text text-yt-bg"
-                : "bg-yt-bg2 text-yt-text hover:bg-yt-hover"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${saved ? "bg-yt-text text-yt-bg" : "bg-yt-bg2 text-yt-text hover:bg-yt-hover"}`}
           >
             <svg
               className="w-5 h-5"
               viewBox="0 0 24 24"
-              fill={isSaved ? "currentColor" : "none"}
+              fill={saved ? "currentColor" : "none"}
               stroke="currentColor"
               strokeWidth="2"
             >
               <path
                 d={
-                  isSaved
+                  saved
                     ? "M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"
                     : "M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15l-5-2.18L7 18V5h10v13z"
                 }
               />
             </svg>
-            {isSaved ? "Saved" : "Save"}
+            {saved ? "Saved" : "Save"}
           </button>
 
-          {/* ➕ Add to Playlist */}
+          {/* Playlist */}
           <button
             onClick={handlePlaylist}
-            title={inPlaylist ? "Remove from playlist" : "Add to playlist"}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              inPlaylist
-                ? "bg-yt-blue text-white hover:bg-blue-400"
-                : "bg-yt-bg2 text-yt-text hover:bg-yt-hover"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${inPl ? "bg-yt-blue text-white hover:bg-blue-400" : "bg-yt-bg2 text-yt-text hover:bg-yt-hover"}`}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              {inPlaylist ? (
+              {inPl ? (
                 <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z" />
               ) : (
                 <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7zm9-4v3h-2V3h-2v3h-3l4 4 4-4h-3z" />
               )}
             </svg>
-            {inPlaylist ? "In Playlist" : "Add to Playlist"}
+            {inPl ? "In Playlist" : "Add to Playlist"}
           </button>
         </div>
       </div>
 
-      {/* Description box — views + date only (no comment count) */}
+      {/* Description */}
       <div
         className="mt-3 bg-yt-bg2 rounded-xl p-3 cursor-pointer"
         onClick={() => setExpanded((p) => !p)}

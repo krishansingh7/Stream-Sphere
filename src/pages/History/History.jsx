@@ -1,16 +1,20 @@
-import { useWatchHistory } from '../../hooks/firebase/useWatchHistory'
-import VideoRow from '../../components/video/VideoRow'
-import EmptyState from '../../components/common/EmptyState'
-import Spinner from '../../components/common/Spinner'
-import toast from 'react-hot-toast'
+import { useUserData } from "../../context/UserDataContext";
+import { useSelector } from "react-redux";
+import VideoRow from "../../components/video/VideoRow";
+import EmptyState from "../../components/common/EmptyState";
+import Spinner from "../../components/common/Spinner";
+import toast from "react-hot-toast";
 
 export default function History() {
-  const { history, isLoading, removeFromHistory, clearHistory } = useWatchHistory()
+  const { history, removeFromHistory, clearHistory } = useUserData();
+  const { loading: authLoading } = useSelector((s) => s.auth);
 
-  const handleClear = () => {
-    clearHistory()
-    toast.success('History cleared')
-  }
+  if (authLoading)
+    return (
+      <div className="flex justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
 
   return (
     <div className="px-6 py-6 max-w-4xl">
@@ -18,7 +22,10 @@ export default function History() {
         <h1 className="text-2xl font-semibold text-yt-text">Watch history</h1>
         {history.length > 0 && (
           <button
-            onClick={handleClear}
+            onClick={() => {
+              clearHistory();
+              toast.success("History cleared");
+            }}
             className="text-sm text-yt-blue hover:underline"
           >
             Clear all history
@@ -26,9 +33,7 @@ export default function History() {
         )}
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-20"><Spinner size="lg" /></div>
-      ) : history.length === 0 ? (
+      {history.length === 0 ? (
         <EmptyState
           emoji="🕐"
           title="No watch history"
@@ -41,13 +46,13 @@ export default function History() {
               key={video.id}
               video={video}
               onRemove={(id) => {
-                removeFromHistory(id)
-                toast.success('Removed from history')
+                removeFromHistory(id);
+                toast.success("Removed from history");
               }}
             />
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }

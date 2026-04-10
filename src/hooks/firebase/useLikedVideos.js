@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import {
   collection,
@@ -8,7 +8,6 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  getDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured } from "../../config/firebase";
@@ -18,15 +17,28 @@ export const useLikedVideos = () => {
   const { user, loading: authLoading } = useSelector((s) => s.auth);
   const [likedVideos, setLikedVideos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const unsubRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user?.uid || !isFirebaseConfigured || !db) {
+
+    if (!user?.uid) {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
       setLikedVideos([]);
       setIsLoading(false);
       return;
     }
 
+    if (!isFirebaseConfigured || !db) {
+      setLikedVideos([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     const ref = collection(
       db,
       FIRESTORE.USERS,
@@ -35,20 +47,24 @@ export const useLikedVideos = () => {
     );
     const q = query(ref, orderBy("likedAt", "desc"));
 
-    setIsLoading(true);
-    const unsub = onSnapshot(
+    unsubRef.current = onSnapshot(
       q,
       (snap) => {
         setLikedVideos(snap.docs.map((d) => d.data()));
         setIsLoading(false);
       },
       (err) => {
-        console.error("[Firestore] Likes error:", err.message);
+        console.error("[Likes]", err.message);
         setIsLoading(false);
       },
     );
 
-    return unsub;
+    return () => {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+    };
   }, [user?.uid, authLoading]);
 
   const likeVideo = useCallback(
@@ -60,7 +76,7 @@ export const useLikedVideos = () => {
           { ...video, likedAt: serverTimestamp() },
         );
       } catch (e) {
-        console.error("[Likes] add error:", e.message);
+        console.error("[Like add]", e.message);
       }
     },
     [user?.uid],
@@ -74,7 +90,7 @@ export const useLikedVideos = () => {
           doc(db, FIRESTORE.USERS, user.uid, FIRESTORE.LIKED_VIDEOS, videoId),
         );
       } catch (e) {
-        console.error("[Likes] remove error:", e.message);
+        console.error("[Like remove]", e.message);
       }
     },
     [user?.uid],
@@ -83,16 +99,23 @@ export const useLikedVideos = () => {
   return { likedVideos, isLoading, likeVideo, unlikeVideo };
 };
 
-// Check if a specific video is liked — reads from snapshot for speed
+// Per-video real-time like status
 export const useIsLiked = (videoId) => {
   const { user, loading: authLoading } = useSelector((s) => s.auth);
   const [liked, setLiked] = useState(false);
+  const unsubRef = useRef(null);
 
   useEffect(() => {
+    if (unsubRef.current) {
+      unsubRef.current();
+      unsubRef.current = null;
+    }
+
     if (authLoading || !user?.uid || !videoId || !isFirebaseConfigured || !db) {
       setLiked(false);
       return;
     }
+
     const ref = doc(
       db,
       FIRESTORE.USERS,
@@ -100,8 +123,14 @@ export const useIsLiked = (videoId) => {
       FIRESTORE.LIKED_VIDEOS,
       videoId,
     );
-    const unsub = onSnapshot(ref, (snap) => setLiked(snap.exists()));
-    return unsub;
+    unsubRef.current = onSnapshot(ref, (snap) => setLiked(snap.exists()));
+
+    return () => {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+    };
   }, [user?.uid, videoId, authLoading]);
 
   return liked;

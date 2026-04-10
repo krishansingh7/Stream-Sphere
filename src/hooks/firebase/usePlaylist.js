@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector } from "react-redux";
 import {
   addToPlaylist,
@@ -11,21 +11,33 @@ export const usePlaylist = () => {
   const { user, loading: authLoading } = useSelector((s) => s.auth);
   const [playlist, setPlaylist] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const unsubRef = useRef(null);
 
   useEffect(() => {
     if (authLoading) return;
+
     if (!user?.uid) {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
       setPlaylist([]);
       setIsLoading(false);
       return;
     }
 
     setIsLoading(true);
-    const unsub = subscribeToPlaylist(user.uid, (data) => {
+    unsubRef.current = subscribeToPlaylist(user.uid, (data) => {
       setPlaylist(data);
       setIsLoading(false);
     });
-    return unsub;
+
+    return () => {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+    };
   }, [user?.uid, authLoading]);
 
   const add = useCallback(

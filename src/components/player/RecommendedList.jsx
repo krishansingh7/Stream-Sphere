@@ -4,6 +4,7 @@ import { formatViews, formatDuration, timeAgo, getThumbnail } from '../../utils/
 
 function RelatedCard({ video }) {
   const navigate = useNavigate()
+  console.log(video)
   const { snippet, statistics, contentDetails } = video
   const videoId = video.id?.videoId || video.id
   const thumbnail = getThumbnail(snippet?.thumbnails)

@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
   collection,
   query,
@@ -15,22 +15,36 @@ import {
 import { db, isFirebaseConfigured } from "../../config/firebase";
 import { FIRESTORE } from "../../config/constants";
 
-// ✅ Uses onSnapshot — real-time listener with Firebase offline cache
-// This NEVER loses data on refresh because Firebase SDK caches locally
 export const useWatchHistory = () => {
+  const dispatch = useDispatch();
   const { user, loading: authLoading } = useSelector((s) => s.auth);
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const unsubRef = useRef(null);
 
   useEffect(() => {
-    // Wait for Firebase auth to finish restoring session
+    // Auth is still restoring on page refresh — wait
     if (authLoading) return;
-    if (!user?.uid || !isFirebaseConfigured || !db) {
+
+    // User logged out — clear data immediately
+    if (!user?.uid) {
+      // Unsubscribe any active listener
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
       setHistory([]);
       setIsLoading(false);
       return;
     }
 
+    if (!isFirebaseConfigured || !db) {
+      setHistory([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     const ref = collection(
       db,
       FIRESTORE.USERS,
@@ -39,21 +53,25 @@ export const useWatchHistory = () => {
     );
     const q = query(ref, orderBy("watchedAt", "desc"));
 
-    setIsLoading(true);
-    // onSnapshot fires immediately from local cache, then syncs with server
-    const unsub = onSnapshot(
+    // Real-time listener — reads from local cache first, then syncs
+    unsubRef.current = onSnapshot(
       q,
       (snap) => {
         setHistory(snap.docs.map((d) => d.data()));
         setIsLoading(false);
       },
       (err) => {
-        console.error("[Firestore] History error:", err.message);
+        console.error("[History]", err.message);
         setIsLoading(false);
       },
     );
 
-    return unsub; // cleanup listener on unmount / user change
+    return () => {
+      if (unsubRef.current) {
+        unsubRef.current();
+        unsubRef.current = null;
+      }
+    };
   }, [user?.uid, authLoading]);
 
   const addToHistory = useCallback(
@@ -65,7 +83,7 @@ export const useWatchHistory = () => {
           { ...video, watchedAt: serverTimestamp() },
         );
       } catch (e) {
-        console.error("[History] add error:", e.message);
+        console.error("[History add]", e.message);
       }
     },
     [user?.uid],
@@ -79,7 +97,7 @@ export const useWatchHistory = () => {
           doc(db, FIRESTORE.USERS, user.uid, FIRESTORE.WATCH_HISTORY, videoId),
         );
       } catch (e) {
-        console.error("[History] remove error:", e.message);
+        console.error("[History remove]", e.message);
       }
     },
     [user?.uid],
@@ -88,18 +106,14 @@ export const useWatchHistory = () => {
   const clearHistory = useCallback(async () => {
     if (!user?.uid || !isFirebaseConfigured || !db) return;
     try {
-      const ref = collection(
-        db,
-        FIRESTORE.USERS,
-        user.uid,
-        FIRESTORE.WATCH_HISTORY,
+      const snap = await getDocs(
+        collection(db, FIRESTORE.USERS, user.uid, FIRESTORE.WATCH_HISTORY),
       );
-      const snap = await getDocs(ref);
       const batch = writeBatch(db);
       snap.docs.forEach((d) => batch.delete(d.ref));
       await batch.commit();
     } catch (e) {
-      console.error("[History] clear error:", e.message);
+      console.error("[History clear]", e.message);
     }
   }, [user?.uid]);
 

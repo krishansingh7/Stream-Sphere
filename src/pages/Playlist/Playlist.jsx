@@ -1,20 +1,15 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactPlayer from "react-player/lazy";
-import { usePlaylist } from "../../hooks/firebase/usePlaylist";
-import {
-  formatViews,
-  formatDuration,
-  timeAgo,
-  getThumbnail,
-} from "../../utils/formatters";
+import { useUserData } from "../../context/UserDataContext";
+import { formatViews, formatDuration, timeAgo } from "../../utils/formatters";
 import EmptyState from "../../components/common/EmptyState";
 import Spinner from "../../components/common/Spinner";
 import toast from "react-hot-toast";
 
 export default function Playlist() {
   const navigate = useNavigate();
-  const { playlist, isLoading, remove, clear } = usePlaylist();
+  const { playlist, removeFromPlaylist, clearPlaylist } = useUserData();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isShuffle, setIsShuffle] = useState(false);
@@ -26,11 +21,9 @@ export default function Playlist() {
     setMounted(true);
   }, []);
 
-  // Reset index when playlist changes
   useEffect(() => {
-    if (playlist.length > 0 && currentIndex >= playlist.length) {
+    if (playlist.length > 0 && currentIndex >= playlist.length)
       setCurrentIndex(0);
-    }
   }, [playlist.length]);
 
   const current = playlist[currentIndex];
@@ -40,20 +33,14 @@ export default function Playlist() {
     setIsPlaying(true);
   }, []);
 
-  const goPrev = useCallback(() => {
-    if (isShuffle) {
-      goTo(Math.floor(Math.random() * playlist.length));
-    } else {
-      goTo(currentIndex > 0 ? currentIndex - 1 : playlist.length - 1);
-    }
+  const goNext = useCallback(() => {
+    if (isShuffle) goTo(Math.floor(Math.random() * playlist.length));
+    else goTo(currentIndex < playlist.length - 1 ? currentIndex + 1 : 0);
   }, [currentIndex, playlist.length, isShuffle]);
 
-  const goNext = useCallback(() => {
-    if (isShuffle) {
-      goTo(Math.floor(Math.random() * playlist.length));
-    } else {
-      goTo(currentIndex < playlist.length - 1 ? currentIndex + 1 : 0);
-    }
+  const goPrev = useCallback(() => {
+    if (isShuffle) goTo(Math.floor(Math.random() * playlist.length));
+    else goTo(currentIndex > 0 ? currentIndex - 1 : playlist.length - 1);
   }, [currentIndex, playlist.length, isShuffle]);
 
   const handleEnded = useCallback(() => {
@@ -61,35 +48,24 @@ export default function Playlist() {
       setIsPlaying(true);
       return;
     }
-    if (currentIndex < playlist.length - 1 || isShuffle) {
-      goNext();
-    } else {
-      setIsPlaying(false);
-    }
+    if (currentIndex < playlist.length - 1 || isShuffle) goNext();
+    else setIsPlaying(false);
   }, [currentIndex, playlist.length, isRepeat, isShuffle, goNext]);
-
-  if (isLoading)
-    return (
-      <div className="flex justify-center py-20">
-        <Spinner size="lg" />
-      </div>
-    );
 
   if (playlist.length === 0) {
     return (
       <EmptyState
         emoji="🎵"
         title="Your playlist is empty"
-        subtitle="Add videos to your playlist from the watch page"
+        subtitle="Add videos from the watch page"
       />
     );
   }
 
   return (
     <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-56px)] overflow-hidden">
-      {/* ── LEFT: Video Player ── */}
+      {/* Player */}
       <div className="flex-1 flex flex-col bg-black min-w-0">
-        {/* Player */}
         <div className="relative flex-1 bg-black">
           {mounted && current && (
             <ReactPlayer
@@ -106,8 +82,6 @@ export default function Playlist() {
             />
           )}
         </div>
-
-        {/* Current video info */}
         {current && (
           <div className="px-4 py-3 bg-yt-bg border-t border-yt-border">
             <p className="text-sm font-semibold text-yt-text line-clamp-1">
@@ -118,10 +92,8 @@ export default function Playlist() {
             </p>
           </div>
         )}
-
-        {/* ── Controls bar ── */}
+        {/* Controls */}
         <div className="flex items-center justify-between px-6 py-4 bg-yt-bg border-t border-yt-border">
-          {/* Shuffle */}
           <button
             onClick={() => setIsShuffle((p) => !p)}
             title="Shuffle"
@@ -131,8 +103,6 @@ export default function Playlist() {
               <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" />
             </svg>
           </button>
-
-          {/* Prev */}
           <button
             onClick={goPrev}
             disabled={playlist.length <= 1}
@@ -142,8 +112,6 @@ export default function Playlist() {
               <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
             </svg>
           </button>
-
-          {/* Play / Pause */}
           <button
             onClick={() => setIsPlaying((p) => !p)}
             className="w-14 h-14 bg-yt-text text-yt-bg rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
@@ -158,8 +126,6 @@ export default function Playlist() {
               </svg>
             )}
           </button>
-
-          {/* Next */}
           <button
             onClick={goNext}
             disabled={playlist.length <= 1}
@@ -169,8 +135,6 @@ export default function Playlist() {
               <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
             </svg>
           </button>
-
-          {/* Repeat */}
           <button
             onClick={() => setIsRepeat((p) => !p)}
             title="Repeat"
@@ -183,22 +147,21 @@ export default function Playlist() {
         </div>
       </div>
 
-      {/* ── RIGHT: Playlist sidebar ── */}
+      {/* Playlist sidebar */}
       <div className="w-full lg:w-[380px] flex-shrink-0 flex flex-col bg-yt-bg border-l border-yt-border overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-yt-border flex-shrink-0">
           <div>
             <h2 className="text-base font-semibold text-yt-text">
               My Playlist
             </h2>
             <p className="text-xs text-yt-text2">
-              {playlist.length} videos · {currentIndex + 1} / {playlist.length}{" "}
+              {playlist.length} videos · {currentIndex + 1}/{playlist.length}{" "}
               playing
             </p>
           </div>
           <button
             onClick={() => {
-              clear();
+              clearPlaylist();
               toast.success("Playlist cleared");
             }}
             className="text-xs text-yt-text2 hover:text-yt-red transition-colors px-3 py-1.5 rounded-lg hover:bg-yt-bg3"
@@ -206,51 +169,33 @@ export default function Playlist() {
             Clear all
           </button>
         </div>
-
-        {/* Video list */}
         <div className="flex-1 overflow-y-auto">
           {playlist.map((video, idx) => (
             <div
               key={video.id}
               onClick={() => goTo(idx)}
-              className={`flex gap-3 px-3 py-2 cursor-pointer transition-colors group ${
-                idx === currentIndex
-                  ? "bg-yt-bg3 border-l-2 border-yt-red"
-                  : "hover:bg-yt-bg2 border-l-2 border-transparent"
-              }`}
+              className={`flex gap-3 px-3 py-2 cursor-pointer transition-colors group ${idx === currentIndex ? "bg-yt-bg3 border-l-2 border-yt-red" : "hover:bg-yt-bg2 border-l-2 border-transparent"}`}
             >
-              {/* Index or playing indicator */}
               <div className="w-5 flex-shrink-0 flex items-center justify-center">
                 {idx === currentIndex ? (
                   <div className="flex gap-0.5 items-end h-4">
                     <div
-                      className={`w-1 bg-yt-red rounded-sm ${isPlaying ? "animate-bounce" : "h-2"}`}
-                      style={{
-                        height: isPlaying ? "16px" : "8px",
-                        animationDelay: "0ms",
-                      }}
+                      className={`w-1 bg-yt-red rounded-sm ${isPlaying ? "animate-bounce" : ""}`}
+                      style={{ height: "14px", animationDelay: "0ms" }}
                     />
                     <div
-                      className={`w-1 bg-yt-red rounded-sm ${isPlaying ? "animate-bounce" : "h-3"}`}
-                      style={{
-                        height: isPlaying ? "10px" : "12px",
-                        animationDelay: "150ms",
-                      }}
+                      className={`w-1 bg-yt-red rounded-sm ${isPlaying ? "animate-bounce" : ""}`}
+                      style={{ height: "10px", animationDelay: "150ms" }}
                     />
                     <div
-                      className={`w-1 bg-yt-red rounded-sm ${isPlaying ? "animate-bounce" : "h-2"}`}
-                      style={{
-                        height: isPlaying ? "14px" : "6px",
-                        animationDelay: "300ms",
-                      }}
+                      className={`w-1 bg-yt-red rounded-sm ${isPlaying ? "animate-bounce" : ""}`}
+                      style={{ height: "14px", animationDelay: "300ms" }}
                     />
                   </div>
                 ) : (
                   <span className="text-xs text-yt-text3">{idx + 1}</span>
                 )}
               </div>
-
-              {/* Thumbnail */}
               <div className="relative w-24 flex-shrink-0 aspect-video rounded-md overflow-hidden bg-yt-bg2">
                 <img
                   src={video.thumbnail}
@@ -264,8 +209,6 @@ export default function Playlist() {
                   </span>
                 )}
               </div>
-
-              {/* Info */}
               <div className="flex-1 min-w-0 py-0.5">
                 <p
                   className={`text-xs font-medium line-clamp-2 leading-snug ${idx === currentIndex ? "text-yt-text" : "text-yt-text2"}`}
@@ -276,13 +219,11 @@ export default function Playlist() {
                   {video.channelTitle}
                 </p>
               </div>
-
-              {/* Remove button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  remove(video.id);
-                  toast.success("Removed from playlist");
+                  removeFromPlaylist(video.id);
+                  toast.success("Removed");
                 }}
                 className="opacity-0 group-hover:opacity-100 self-center p-1 rounded-full hover:bg-yt-hover text-yt-text3 transition-all flex-shrink-0"
               >

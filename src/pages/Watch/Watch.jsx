@@ -1,37 +1,43 @@
-import { useSearchParams } from 'react-router-dom'
-import { useEffect } from 'react'
-import { useSelector } from 'react-redux'
-import { useVideoDetails } from '../../hooks/api/useVideoDetails'
-import { useRelatedVideos } from '../../hooks/api/useRelatedVideos'
-import { useWatchHistory } from '../../hooks/firebase/useWatchHistory'
-import { toFirestoreVideo } from '../../utils/formatters'
-import VideoPlayer from '../../components/player/VideoPlayer'
-import VideoInfo from '../../components/player/VideoInfo'
-import CommentSection from '../../components/comments/CommentSection'
-import RecommendedList from '../../components/player/RecommendedList'
-import Spinner from '../../components/common/Spinner'
-import ErrorMessage from '../../components/common/ErrorMessage'
+import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useVideoDetails } from "../../hooks/api/useVideoDetails";
+import { useUserData } from "../../context/UserDataContext";
+import { toFirestoreVideo, getThumbnail } from "../../utils/formatters";
+import VideoPlayer from "../../components/player/VideoPlayer";
+import VideoInfo from "../../components/player/VideoInfo";
+import CommentSection from "../../components/comments/CommentSection";
+import RecommendedList from "../../components/player/RecommendedList";
+import Spinner from "../../components/common/Spinner";
+import ErrorMessage from "../../components/common/ErrorMessage";
 
 export default function Watch() {
-  const [searchParams] = useSearchParams()
-  const videoId = searchParams.get('v')
-  const { user } = useSelector((s) => s.auth)
-  const { data: video, isLoading, isError } = useVideoDetails(videoId)
-  const { addToHistory } = useWatchHistory()
+  const [searchParams] = useSearchParams();
+  const videoId = searchParams.get("v");
+  const { user } = useSelector((s) => s.auth);
+  const { data: video, isLoading, isError } = useVideoDetails(videoId);
+  const { addToHistory } = useUserData();
+  const [isTheater, setIsTheater] = useState(false);
 
-  // Pass channel + category to related videos for better results
-  const channelId = video?.snippet?.channelId
-  const categoryId = video?.snippet?.categoryId
-  const title = video?.snippet?.title
+  const channelId = video?.snippet?.channelId;
+  const categoryId = video?.snippet?.categoryId;
+  const title = video?.snippet?.title;
+  const thumbnail = getThumbnail(video?.snippet?.thumbnails);
 
-  // Auto-save to watch history
+  // Save to watch history when video loads and user is logged in
   useEffect(() => {
-    if (video && user) addToHistory(toFirestoreVideo(video))
-  }, [video?.id, user?.uid])
+    if (video && user) addToHistory(toFirestoreVideo(video));
+  }, [video?.id, user?.uid]);
 
-  if (!videoId) return <ErrorMessage message="No video selected." />
-  if (isLoading) return <div className="flex justify-center py-20"><Spinner size="lg" /></div>
-  if (isError || !video) return <ErrorMessage message="Failed to load video." />
+  if (!videoId) return <ErrorMessage message="No video selected." />;
+  if (isLoading)
+    return (
+      <div className="flex justify-center py-20">
+        <Spinner size="lg" />
+      </div>
+    );
+  if (isError || !video)
+    return <ErrorMessage message="Failed to load video." />;
 
   return (
     <div className="flex gap-6 px-4 py-4 max-w-[1800px] mx-auto">
@@ -55,5 +61,5 @@ export default function Watch() {
         />
       </div>
     </div>
-  )
+  );
 }
