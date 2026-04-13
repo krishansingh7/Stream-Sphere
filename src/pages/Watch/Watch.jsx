@@ -56,9 +56,9 @@ export default function Watch() {
     return <ErrorMessage message="Failed to load video." />;
 
   return (
-    <div className="flex gap-6 px-4 py-4 max-w-[1800px] mx-auto">
+    <div className="flex flex-col lg:flex-row gap-6 px-0 sm:px-4 py-0 sm:py-4 max-w-[1800px] mx-auto">
       {/* ── LEFT: Player + Info + Comments ── */}
-      <div className="flex-1 min-w-0 max-w-[calc(100%-420px)]">
+      <div className="flex-1 min-w-0 max-w-full lg:max-w-[calc(100%-420px)]">
         <div ref={playerContainerRef} className="w-full aspect-video">
            <div className={isPip ? "fixed bottom-6 right-6 w-[360px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-50 rounded-xl overflow-hidden group ring-1 ring-yt-border" : "w-full h-full"}>
               <VideoPlayer videoId={videoId} />
@@ -81,7 +81,7 @@ export default function Watch() {
       </div>
 
       {/* ── RIGHT: Recommended videos ── */}
-      <div className="w-[400px] flex-shrink-0 hidden lg:block">
+      <div className="w-full lg:w-[400px] flex-shrink-0 px-2 sm:px-0">
         <RecommendedList
           videoId={videoId}
           channelId={channelId}

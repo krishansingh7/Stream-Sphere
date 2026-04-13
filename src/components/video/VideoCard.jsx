@@ -19,7 +19,7 @@ const VideoCard = ({ video }) => {
   const views = formatViews(statistics?.viewCount);
   const ago = timeAgo(snippet.publishedAt);
 
-  // ✅ Fetch real channel avatar — cached per channelId, deduped across cards
+  // Fetch real channel avatar — cached per channelId, deduped across cards
   const { data: channelAvatar } = useChannelAvatar(snippet.channelId);
 
   const handleClick = () => navigate(`/watch?v=${videoId}`);

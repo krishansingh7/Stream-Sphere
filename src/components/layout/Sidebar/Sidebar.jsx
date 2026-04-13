@@ -1,4 +1,5 @@
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { toggleSidebar } from "../../../store/slices/uiSlice";
 import { NavLink, useNavigate } from "react-router-dom";
 import { signInWithGoogle } from "../../../services/firebase";
 import { useUserData } from "../../../context/UserDataContext";
@@ -159,6 +160,7 @@ function MiniItem({ to, icon, label, onClick, badge }) {
 }
 
 export default function Sidebar() {
+  const dispatch = useDispatch();
   const { sidebarOpen } = useSelector((s) => s.ui);
   const { user } = useSelector((s) => s.auth);
   const navigate = useNavigate();
@@ -182,9 +184,10 @@ export default function Sidebar() {
     }
   };
 
+  // When closed, render mini-sidebar ONLY on desktop
   if (!sidebarOpen) {
     return (
-      <aside className="fixed top-14 left-0 w-20 h-[calc(100vh-56px)] bg-yt-bg z-40 flex flex-col items-center py-2 overflow-y-auto hide-scrollbar">
+      <aside className="hidden md:flex fixed top-14 left-0 w-20 h-[calc(100vh-56px)] bg-yt-bg z-40 flex-col items-center py-2 overflow-y-auto hide-scrollbar">
         <MiniItem to="/" icon={<HomeIcon />} label="Home" />
         <MiniItem to="/shorts" icon={<ShortsIcon />} label="Shorts" />
         {/* <MiniItem icon={<SubIcon />} label="Subscriptions" onClick={() => {}} /> */}
@@ -220,10 +223,16 @@ export default function Sidebar() {
     );
   }
 
+  // When open, render full sidebar (with mobile overlay)
   return (
-    <aside className="fixed top-14 left-0 w-60 h-[calc(100vh-56px)] overflow-y-auto bg-yt-bg z-40 pb-6 hide-scrollbar">
-      <div className="px-3 py-2">
-        <div className="mb-1">
+    <>
+      <div 
+        className="md:hidden fixed inset-0 top-14 bg-black/50 z-40"
+        onClick={() => dispatch(toggleSidebar())}
+      />
+      <aside className="fixed top-14 left-0 w-60 h-[calc(100vh-56px)] overflow-y-auto bg-yt-bg z-50 pb-6 hide-scrollbar shadow-2xl md:shadow-none">
+        <div className="px-3 py-2">
+          <div className="mb-1">
           <FullItem to="/" icon={<HomeIcon />} label="Home" />
           <FullItem to="/shorts" icon={<ShortsIcon />} label="Shorts" />
           {/* <FullItem
@@ -300,6 +309,7 @@ export default function Sidebar() {
           </>
         )}
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

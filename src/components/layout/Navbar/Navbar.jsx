@@ -19,7 +19,7 @@ export default function Navbar() {
 
   // inputVal = what shows in the text box (changes on typing AND arrow keys)
   const [inputVal, setInputVal] = useState(searchParams.get("q") || "");
-  // ✅ FIX: searchQuery = ONLY changes on actual typing, NOT on arrow key nav
+  // FIX: searchQuery = ONLY changes on actual typing, NOT on arrow key nav
   // Suggestions are fetched based on this, so they don't reset during navigation
   const searchQueryRef = useRef(searchParams.get("q") || "");
 
@@ -32,7 +32,7 @@ export default function Navbar() {
   const suggestRef = useRef(null);
   const isNavigatingRef = useRef(false); // tracks if user is using arrow keys
 
-  // ✅ Debounce the SEARCH QUERY ref value, not inputVal
+  // Debounce the SEARCH QUERY ref value, not inputVal
   const [debouncedQuery, setDebouncedQuery] = useState(searchQueryRef.current);
 
   // Fetch suggestions only when real typing happens
@@ -43,7 +43,7 @@ export default function Navbar() {
       return;
     }
     getSearchSuggestions(debouncedQuery).then((s) => {
-      // ✅ Only update suggestions if NOT navigating with arrows
+      // Only update suggestions if NOT navigating with arrows
       if (!isNavigatingRef.current) {
         setSuggestions(s);
         setActiveIndex(-1);
@@ -103,7 +103,7 @@ export default function Navbar() {
   const handleInputChange = (e) => {
     const val = e.target.value;
     setInputVal(val);
-    // ✅ Only update search query on real typing
+    // Only update search query on real typing
     searchQueryRef.current = val;
     isNavigatingRef.current = false;
     setShowSuggestions(true);
@@ -121,23 +121,23 @@ export default function Navbar() {
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      isNavigatingRef.current = true; // ✅ Mark as navigating — don't reset suggestions
+      isNavigatingRef.current = true; // Mark as navigating — don't reset suggestions
       setActiveIndex((prev) => {
         const next = prev < suggestions.length - 1 ? prev + 1 : 0;
-        // ✅ Update input display WITHOUT triggering suggestion fetch
+        // Update input display WITHOUT triggering suggestion fetch
         setInputVal(suggestions[next]);
         return next;
       });
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      isNavigatingRef.current = true; // ✅ Mark as navigating
+      isNavigatingRef.current = true; // Mark as navigating
       setActiveIndex((prev) => {
         const next = prev > 0 ? prev - 1 : suggestions.length - 1;
         setInputVal(suggestions[next]);
         return next;
       });
     } else if (e.key === "Escape") {
-      // ✅ Restore original typed query on Escape
+      // Restore original typed query on Escape
       setInputVal(searchQueryRef.current);
       setShowSuggestions(false);
       setActiveIndex(-1);
@@ -179,9 +179,9 @@ export default function Navbar() {
         <VoiceSearchModal listening={listening} onClose={stopListening} />
       )}
 
-      <header className="fixed top-0 left-0 right-0 h-14 bg-yt-bg z-50 flex items-center justify-between px-4 gap-4">
+      <header className="fixed top-0 left-0 right-0 h-14 bg-yt-bg z-50 flex items-center justify-between px-2 sm:px-4 gap-2 sm:gap-4">
         {/* LEFT */}
-        <div className="flex items-center gap-4 min-w-[160px]">
+        <div className="flex items-center gap-2 sm:gap-4 min-w-fit sm:min-w-[160px]">
           <button
             onClick={() => dispatch(toggleSidebar())}
             className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yt-bg3 transition-colors flex-shrink-0"
@@ -194,29 +194,31 @@ export default function Navbar() {
             className="flex items-center gap-0.5 cursor-pointer flex-shrink-0"
             onClick={() => navigate("/")}
           >
-            <svg
-              height="20"
-              viewBox="0 0 90 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M27.97 3.12C27.64 1.89 26.68.93 25.45.6 23.22 0 14.28 0 14.28 0S5.35 0 3.12.6C1.89.93.93 1.89.6 3.12 0 5.35 0 10 0 10s0 4.65.6 6.88c.33 1.23 1.29 2.19 2.52 2.52C5.35 20 14.28 20 14.28 20s8.94 0 11.17-.6c1.23-.33 2.19-1.29 2.52-2.52C28.57 14.65 28.57 10 28.57 10s0-4.65-.6-6.88z"
-                fill="#FF0000"
-              />
-              <path d="M11.43 14.29L18.86 10l-7.43-4.29v8.58z" fill="white" />
-              <text
-                x="32"
-                y="15"
-                fill="white"
-                fontFamily="Roboto,sans-serif"
-                fontSize="14"
-                fontWeight="700"
+            <div className="w-[30px] sm:w-[90px] overflow-hidden flex-shrink-0">
+              <svg
+                height="20"
+                viewBox="0 0 90 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                YouTube
-              </text>
-            </svg>
-            <span className="text-[10px] text-yt-text2 self-start mt-0.5 font-medium">
+                <path
+                  d="M27.97 3.12C27.64 1.89 26.68.93 25.45.6 23.22 0 14.28 0 14.28 0S5.35 0 3.12.6C1.89.93.93 1.89.6 3.12 0 5.35 0 10 0 10s0 4.65.6 6.88c.33 1.23 1.29 2.19 2.52 2.52C5.35 20 14.28 20 14.28 20s8.94 0 11.17-.6c1.23-.33 2.19-1.29 2.52-2.52C28.57 14.65 28.57 10 28.57 10s0-4.65-.6-6.88z"
+                  fill="#FF0000"
+                />
+                <path d="M11.43 14.29L18.86 10l-7.43-4.29v8.58z" fill="white" />
+                <text
+                  x="32"
+                  y="15"
+                  fill="white"
+                  fontFamily="Roboto,sans-serif"
+                  fontSize="14"
+                  fontWeight="700"
+                >
+                  YouTube
+                </text>
+              </svg>
+            </div>
+            <span className="hidden sm:inline text-[10px] text-yt-text2 self-start mt-0.5 font-medium ml-1">
               IN
             </span>
           </div>
@@ -240,7 +242,7 @@ export default function Navbar() {
                 onKeyDown={handleKeyDown}
                 placeholder="Search"
                 autoComplete="off"
-                className="flex-1 bg-yt-bg px-5 pr-2 text-sm text-yt-text placeholder-yt-text3 outline-none rounded-l-full"
+                className="flex-1 w-full min-w-0 bg-yt-bg px-3 sm:px-5 pr-2 text-sm text-yt-text placeholder-yt-text3 outline-none rounded-l-full"
               />
               {/* ✕ Clear button — only shows when input has text */}
               {inputVal && (
@@ -257,7 +259,7 @@ export default function Navbar() {
                     setDebouncedQuery("");
                     inputRef.current?.focus();
                   }}
-                  className="flex-shrink-0 w-8 h-8 self-center mr-1 flex items-center justify-center rounded-full hover:bg-yt-bg3 text-yt-text2 transition-colors"
+                  className="hidden sm:flex flex-shrink-0 w-8 h-8 self-center mr-1 flex items-center justify-center rounded-full hover:bg-yt-bg3 text-yt-text2 transition-colors"
                   title="Clear"
                 >
                   <svg
@@ -271,7 +273,7 @@ export default function Navbar() {
               )}
               <button
                 type="submit"
-                className="px-5 bg-yt-bg2 rounded-r-full hover:bg-yt-bg3 transition-colors flex items-center justify-center border-l border-yt-border"
+                className="px-3 sm:px-5 bg-yt-bg2 rounded-r-full hover:bg-yt-bg3 transition-colors flex items-center justify-center border-l border-yt-border"
               >
                 <svg
                   className="w-5 h-5 text-yt-text"
@@ -339,16 +341,16 @@ export default function Navbar() {
         </div>
 
         {/* RIGHT — auth & theme */}
-        <div className="flex items-center gap-2 min-w-[160px] justify-end">
+        <div className="flex items-center gap-2 min-w-fit sm:min-w-[160px] justify-end">
           <button
             onClick={() => dispatch(toggleTheme())}
             title="Toggle Light/Dark Theme"
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yt-bg3 transition-colors flex-shrink-0 mr-2"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yt-bg3 transition-colors flex-shrink-0 sm:mr-2"
           >
             {theme === "dark" ? (
-              <svg className="w-6 h-6 text-yt-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yt-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             ) : (
-              <svg className="w-6 h-6 text-yt-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yt-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             )}
           </button>
           
@@ -415,14 +417,14 @@ export default function Navbar() {
             </div>
           ) : (
             <button
-              onClick={handleSignIn}
-              className="flex items-center gap-2 px-4 py-1.5 border border-yt-blue text-yt-blue rounded-full text-sm font-medium hover:bg-blue-900/20 transition-colors"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-              </svg>
-              Sign in
-            </button>
+               onClick={handleSignIn}
+               className="flex items-center gap-2 px-3 sm:px-4 py-1.5 border border-yt-blue text-yt-blue rounded-full text-sm font-medium hover:bg-blue-900/20 transition-colors"
+             >
+               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+               </svg>
+               <span className="hidden sm:inline">Sign in</span>
+             </button>
           )}
         </div>
       </header>

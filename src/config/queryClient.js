@@ -7,7 +7,7 @@ export const queryClient = new QueryClient({
       gcTime: 30 * 60 * 1000, // 30 min in cache
       retry: 2,
       refetchOnWindowFocus: false,
-      // ✅ FIXED: was false — this prevented Firestore data from loading after refresh
+      // FIXED: was false — this prevented Firestore data from loading after refresh
       refetchOnMount: true,
     },
   },

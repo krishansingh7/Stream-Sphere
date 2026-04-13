@@ -38,9 +38,9 @@ export default function Trending() {
     return <ErrorMessage message="Failed to load trending videos." />;
 
   return (
-    <div className="px-6 py-4">
+    <div className="px-2 sm:px-6 py-4">
       {/* Page header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-6 px-2 sm:px-0">
         <svg
           className="w-7 h-7 text-yt-red flex-shrink-0"
           viewBox="0 0 24 24"
@@ -69,7 +69,7 @@ export default function Trending() {
       </div>
 
       {/* Video grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
         {isLoading
           ? Array.from({ length: 20 }).map((_, i) => (
               <VideoCardSkeleton key={i} />

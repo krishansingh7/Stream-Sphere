@@ -63,10 +63,10 @@ export default function Playlist() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-56px)] overflow-hidden">
+    <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-56px)] min-h-0 overflow-hidden">
       {/* Player */}
-      <div className="flex-1 flex flex-col bg-black min-w-0">
-        <div className="relative flex-1 bg-black">
+      <div className="flex-none lg:flex-1 flex flex-col bg-black min-w-0 border-b lg:border-b-0 border-yt-border">
+        <div className="relative w-full lg:flex-1 aspect-video lg:aspect-auto bg-black">
           {mounted && current && (
             <ReactPlayer
               ref={playerRef}
@@ -79,11 +79,12 @@ export default function Playlist() {
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               config={{ youtube: { playerVars: { autoplay: 1, rel: 0 } } }}
+              style={{ position: "absolute", top: 0, left: 0 }}
             />
           )}
         </div>
         {current && (
-          <div className="px-4 py-3 bg-yt-bg border-t border-yt-border">
+          <div className="px-4 py-3 bg-yt-bg border-t border-yt-border flex-none">
             <p className="text-sm font-semibold text-yt-text line-clamp-1">
               {current.title}
             </p>
@@ -93,7 +94,7 @@ export default function Playlist() {
           </div>
         )}
         {/* Controls */}
-        <div className="flex items-center justify-between px-6 py-4 bg-yt-bg border-t border-yt-border">
+        <div className="flex items-center justify-between px-6 py-4 bg-yt-bg border-t border-yt-border flex-none">
           <button
             onClick={() => setIsShuffle((p) => !p)}
             title="Shuffle"
@@ -148,7 +149,7 @@ export default function Playlist() {
       </div>
 
       {/* Playlist sidebar */}
-      <div className="w-full lg:w-[380px] flex-shrink-0 flex flex-col bg-yt-bg border-l border-yt-border overflow-hidden">
+      <div className="flex-1 lg:flex-none lg:w-[380px] flex flex-col bg-yt-bg border-l border-yt-border min-h-0 overflow-hidden pb-[60px] md:pb-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-yt-border flex-shrink-0">
           <div>
             <h2 className="text-base font-semibold text-yt-text">

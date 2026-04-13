@@ -12,10 +12,9 @@ export default function AppLayout() {
       <Navbar />
       <Sidebar />
       <PersistentPlayer />
-      {/* Shift content right based on sidebar state */}
+      {/* Shift content right based on sidebar state on desktop only */}
       <main
-        className="pt-14 transition-all duration-200"
-        style={{ marginLeft: sidebarOpen ? '240px' : '80px' }}
+        className={`pt-14 transition-all duration-200 ml-0 ${sidebarOpen ? 'md:ml-60' : 'md:ml-20'}`}
       >
         <Outlet />
       </main>

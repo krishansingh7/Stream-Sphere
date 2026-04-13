@@ -18,6 +18,7 @@ export default function PersistentPlayer() {
     useSelector((s) => s.player);
 
   const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [pos, setPos] = useState({ x: null, y: null }); // null = default bottom-right
   const dragOffset = useRef({ x: 0, y: 0 });
@@ -25,10 +26,15 @@ export default function PersistentPlayer() {
 
   useEffect(() => {
     setMounted(true);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize(); // init
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // ── Draggable mini player ────────────────────────────────────────────
   const onMouseDown = (e) => {
+    if (isMobile) return; // Completely disable drag logic on mobile
     if (e.target.closest("button")) return; // don't drag when clicking buttons
     setIsDragging(true);
     const rect = e.currentTarget.getBoundingClientRect();
@@ -75,20 +81,23 @@ export default function PersistentPlayer() {
 
   if (!isMiniActive) return null;
 
-  const style =
-    pos.x !== null
+  const style = isMobile
+    ? { bottom: 0, left: 0, right: 0, width: "100%" }
+    : pos.x !== null
       ? { left: pos.x, top: pos.y, bottom: "auto", right: "auto" }
       : { bottom: "80px", right: "24px" };
 
   return (
     <div
-      className={`fixed z-[200] w-72 rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black select-none
-        transition-all duration-300 ${isMiniActive ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
-      style={{ ...style, cursor: isDragging ? "grabbing" : "grab" }}
+      className={`fixed z-[200] overflow-hidden shadow-2xl border border-yt-border bg-yt-bg2 select-none
+        transition-all duration-300 md:rounded-xl md:w-72 flex md:block
+        ${isMiniActive ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
+      style={{ ...style, cursor: isDragging ? "grabbing" : (isMobile ? "pointer" : "grab") }}
       onMouseDown={onMouseDown}
+      onClick={() => isMobile && handleExpand()} // Open freely on mobile tap
     >
       {/* ── Video ── */}
-      <div className="relative aspect-video bg-black">
+      <div className="relative w-[130px] aspect-video md:w-full md:aspect-video bg-black flex-shrink-0">
         <ReactPlayer
           ref={playerRef}
           url={`https://www.youtube.com/watch?v=${videoId}`}
@@ -156,12 +165,14 @@ export default function PersistentPlayer() {
 
       {/* ── Info bar ── */}
       <div
-        className="flex items-center gap-2 px-3 py-2 bg-yt-bg2 cursor-pointer hover:bg-yt-bg3 transition-colors"
-        onClick={handleExpand}
+        className="flex-1 flex items-center gap-2 px-3 py-2 bg-yt-bg2 cursor-pointer hover:bg-yt-bg3 transition-colors min-w-0"
+        onClick={(e) => {
+          if (!isMobile) handleExpand();
+        }}
       >
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-yt-text truncate">{title}</p>
-          <p className="text-[11px] text-yt-text2 truncate">{channelTitle}</p>
+          <p className="text-xs md:text-sm font-medium text-yt-text truncate mt-1 md:mt-0">{title}</p>
+          <p className="text-[10px] md:text-[11px] text-yt-text2 truncate">{channelTitle}</p>
         </div>
         {/* Play/pause in info bar too */}
         <button
