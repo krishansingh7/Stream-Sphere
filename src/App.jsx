@@ -13,6 +13,7 @@ const History = lazy(() => import("./pages/History/History"));
 const LikedVideos = lazy(() => import("./pages/LikedVideos/LikedVideos"));
 const WatchLater = lazy(() => import("./pages/WatchLater/WatchLater"));
 const Playlist = lazy(() => import("./pages/Playlist/Playlist"));
+const Shorts = lazy(() => import("./pages/Shorts/Shorts"));
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/watch" element={<Watch />} />
             <Route path="/trending" element={<Trending />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/shorts" element={<Shorts />} />
             <Route path="/channel/:channelId" element={<Channel />} />
             <Route
               path="/history"

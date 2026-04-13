@@ -186,8 +186,8 @@ export default function Sidebar() {
     return (
       <aside className="fixed top-14 left-0 w-20 h-[calc(100vh-56px)] bg-yt-bg z-40 flex flex-col items-center py-2 overflow-y-auto hide-scrollbar">
         <MiniItem to="/" icon={<HomeIcon />} label="Home" />
-        <MiniItem icon={<ShortsIcon />} label="Shorts" onClick={() => {}} />
-        <MiniItem icon={<SubIcon />} label="Subscriptions" onClick={() => {}} />
+        <MiniItem to="/shorts" icon={<ShortsIcon />} label="Shorts" />
+        {/* <MiniItem icon={<SubIcon />} label="Subscriptions" onClick={() => {}} /> */}
         <div className="w-10 border-t border-yt-border my-2" />
         <MiniItem
           icon={<HistoryIcon />}
@@ -225,12 +225,12 @@ export default function Sidebar() {
       <div className="px-3 py-2">
         <div className="mb-1">
           <FullItem to="/" icon={<HomeIcon />} label="Home" />
-          <FullItem icon={<ShortsIcon />} label="Shorts" onClick={() => {}} />
-          <FullItem
+          <FullItem to="/shorts" icon={<ShortsIcon />} label="Shorts" />
+          {/* <FullItem
             icon={<SubIcon />}
             label="Subscriptions"
             onClick={() => {}}
-          />
+          /> */}
         </div>
 
         <div className="border-t border-yt-border my-3" />

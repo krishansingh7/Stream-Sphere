@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { toggleSidebar } from "../../../store/slices/uiSlice";
+import { toggleSidebar, toggleTheme } from "../../../store/slices/uiSlice";
 import { setQuery } from "../../../store/slices/searchSlice";
 import { useDebounce } from "../../../hooks/utils/useDebounce";
 import { useVoiceSearch } from "../../../hooks/utils/useVoiceSearch";
@@ -15,6 +15,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useSelector((s) => s.auth);
+  const { theme } = useSelector((s) => s.ui);
 
   // inputVal = what shows in the text box (changes on typing AND arrow keys)
   const [inputVal, setInputVal] = useState(searchParams.get("q") || "");
@@ -337,8 +338,20 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* RIGHT — auth */}
+        {/* RIGHT — auth & theme */}
         <div className="flex items-center gap-2 min-w-[160px] justify-end">
+          <button
+            onClick={() => dispatch(toggleTheme())}
+            title="Toggle Light/Dark Theme"
+            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yt-bg3 transition-colors flex-shrink-0 mr-2"
+          >
+            {theme === "dark" ? (
+              <svg className="w-6 h-6 text-yt-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            ) : (
+              <svg className="w-6 h-6 text-yt-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            )}
+          </button>
+          
           {user ? (
             <div className="relative">
               <button

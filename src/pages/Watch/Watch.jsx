@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useVideoDetails } from "../../hooks/api/useVideoDetails";
 import { useUserData } from "../../context/UserDataContext";
@@ -24,6 +24,22 @@ export default function Watch() {
   const title = video?.snippet?.title;
   const thumbnail = getThumbnail(video?.snippet?.thumbnails);
 
+  const [isPip, setIsPip] = useState(false);
+  const playerContainerRef = useRef(null);
+
+  // Picture in Picture Observer
+  useEffect(() => {
+    if (!playerContainerRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsPip(!entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(playerContainerRef.current);
+    return () => observer.disconnect();
+  }, [videoId]);
+
   // Save to watch history when video loads and user is logged in
   useEffect(() => {
     if (video && user) addToHistory(toFirestoreVideo(video));
@@ -43,7 +59,20 @@ export default function Watch() {
     <div className="flex gap-6 px-4 py-4 max-w-[1800px] mx-auto">
       {/* ── LEFT: Player + Info + Comments ── */}
       <div className="flex-1 min-w-0 max-w-[calc(100%-420px)]">
-        <VideoPlayer videoId={videoId} />
+        <div ref={playerContainerRef} className="w-full aspect-video">
+           <div className={isPip ? "fixed bottom-6 right-6 w-[360px] shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-50 rounded-xl overflow-hidden group ring-1 ring-yt-border" : "w-full h-full"}>
+              <VideoPlayer videoId={videoId} />
+              {isPip && (
+                <button 
+                  onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} 
+                  className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-[60]"
+                  title="Back to top"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                </button>
+              )}
+           </div>
+        </div>
         <VideoInfo video={video} />
         <CommentSection
           videoId={videoId}

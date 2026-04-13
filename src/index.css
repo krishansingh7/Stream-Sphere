@@ -12,10 +12,37 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Theme Variables */
+:root {
+  --yt-bg: #f9f9f9;
+  --yt-bg2: #ffffff;
+  --yt-bg3: #e5e5e5;
+  --yt-hover: #d5d5d5;
+  --yt-border: #cccccc;
+  --yt-red: #ff0000;
+  --yt-blue: #065fd4;
+  --yt-text: #0f0f0f;
+  --yt-text2: #606060;
+  --yt-text3: #909090;
+}
+
+.dark {
+  --yt-bg: #0f0f0f;
+  --yt-bg2: #212121;
+  --yt-bg3: #272727;
+  --yt-hover: #3f3f3f;
+  --yt-border: #3f3f3f;
+  --yt-red: #ff0000;
+  --yt-blue: #3ea6ff;
+  --yt-text: #f1f1f1;
+  --yt-text2: #aaaaaa;
+  --yt-text3: #717171;
+}
+
 body {
   font-family: 'Roboto', sans-serif;
-  background-color: #0f0f0f;
-  color: #f1f1f1;
+  background-color: var(--yt-bg);
+  color: var(--yt-text);
   overflow-x: hidden;
 }
 

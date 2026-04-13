@@ -1,3 +1,4 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   formatViews,
@@ -7,7 +8,7 @@ import {
 } from "../../utils/formatters";
 import { useChannelAvatar } from "../../hooks/api/useChannelAvatar";
 
-export default function VideoCard({ video }) {
+const VideoCard = ({ video }) => {
   const navigate = useNavigate();
   if (!video?.snippet) return null;
 
@@ -93,4 +94,6 @@ export default function VideoCard({ video }) {
       </div>
     </div>
   );
-}
+};
+
+export default React.memo(VideoCard);

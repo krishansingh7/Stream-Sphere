@@ -6,16 +6,16 @@ export default {
     extend: {
       colors: {
         yt: {
-          bg: '#0f0f0f',
-          bg2: '#212121',
-          bg3: '#272727',
-          hover: '#3f3f3f',
-          border: '#3f3f3f',
-          red: '#ff0000',
-          blue: '#3ea6ff',
-          text: '#f1f1f1',
-          text2: '#aaaaaa',
-          text3: '#717171',
+          bg: 'var(--yt-bg)',
+          bg2: 'var(--yt-bg2)',
+          bg3: 'var(--yt-bg3)',
+          hover: 'var(--yt-hover)',
+          border: 'var(--yt-border)',
+          red: 'var(--yt-red)',
+          blue: 'var(--yt-blue)',
+          text: 'var(--yt-text)',
+          text2: 'var(--yt-text2)',
+          text3: 'var(--yt-text3)',
         },
       },
       fontFamily: {
