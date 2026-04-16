@@ -17,6 +17,7 @@ export default defineConfig({
         rewrite: (path) =>
           path.replace(/^\/api\/suggestions/, "/complete/search"),
         secure: true,
+        host: true,   // To access on dev environment
       },
     },
   },

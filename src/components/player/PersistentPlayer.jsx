@@ -7,15 +7,16 @@ import {
   setPlaying,
   hideMiniPlayer,
 } from "../../store/slices/playerSlice";
-
+import { useMediaSession } from "../../hooks/utils/useMediaSession";
 
 export default function PersistentPlayer() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { videoId, title, channelTitle, thumbnail, isPlaying } =
-    useSelector((s) => s.player);
+  const { videoId, title, channelTitle, thumbnail, isPlaying } = useSelector(
+    (s) => s.player,
+  );
 
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -23,6 +24,16 @@ export default function PersistentPlayer() {
   const [pos, setPos] = useState({ x: null, y: null }); // null = default bottom-right
   const dragOffset = useRef({ x: 0, y: 0 });
   const playerRef = useRef(null);
+
+  // Integrate Media Session API + background audio keepalive
+  useMediaSession(
+    { videoId, title, channelTitle, thumbnail, isPlaying },
+    {
+      // Wire up next/prev if you have a queue in the future
+      onNext: undefined,
+      onPrev: undefined,
+    },
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -92,7 +103,10 @@ export default function PersistentPlayer() {
       className={`fixed z-[200] overflow-hidden shadow-2xl border border-yt-border bg-yt-bg2 select-none
         transition-all duration-300 md:rounded-xl md:w-72 flex md:block
         ${isMiniActive ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
-      style={{ ...style, cursor: isDragging ? "grabbing" : (isMobile ? "pointer" : "grab") }}
+      style={{
+        ...style,
+        cursor: isDragging ? "grabbing" : isMobile ? "pointer" : "grab",
+      }}
       onMouseDown={onMouseDown}
       onClick={() => isMobile && handleExpand()} // Open freely on mobile tap
     >
@@ -171,8 +185,12 @@ export default function PersistentPlayer() {
         }}
       >
         <div className="flex-1 min-w-0">
-          <p className="text-xs md:text-sm font-medium text-yt-text truncate mt-1 md:mt-0">{title}</p>
-          <p className="text-[10px] md:text-[11px] text-yt-text2 truncate">{channelTitle}</p>
+          <p className="text-xs md:text-sm font-medium text-yt-text truncate mt-1 md:mt-0">
+            {title}
+          </p>
+          <p className="text-[10px] md:text-[11px] text-yt-text2 truncate">
+            {channelTitle}
+          </p>
         </div>
         {/* Play/pause in info bar too */}
         <button
