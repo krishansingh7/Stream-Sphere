@@ -27,6 +27,8 @@ const BackIcon = () => (
 );
 
 // ─── Logo SVG ─────────────────────────────────────────────────────────────────
+// fill="currentColor" on the text so it follows the parent's text color
+// (white in dark mode, black in light mode — set via className on the wrapper)
 function YTLogo({ showText = true }) {
   return (
     <svg height="20" viewBox="0 0 116 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -34,9 +36,11 @@ function YTLogo({ showText = true }) {
         d="M27.97 3.12C27.64 1.89 26.68.93 25.45.6 23.22 0 14.28 0 14.28 0S5.35 0 3.12.6C1.89.93.93 1.89.6 3.12 0 5.35 0 10 0 10s0 4.65.6 6.88c.33 1.23 1.29 2.19 2.52 2.52C5.35 20 14.28 20 14.28 20s8.94 0 11.17-.6c1.23-.33 2.19-1.29 2.52-2.52C28.57 14.65 28.57 10 28.57 10s0-4.65-.6-6.88z"
         fill="#FF0000"
       />
+      {/* Play triangle — always white inside the red box */}
       <path d="M11.43 14.29L18.86 10l-7.43-4.29v8.58z" fill="white" />
+      {/* "YouTube" text — inherits color from parent (text-yt-text) */}
       {showText && (
-        <text x="32" y="15" fill="white" fontFamily="Roboto,sans-serif" fontSize="14" fontWeight="700">
+        <text x="32" y="15" fill="currentColor" fontFamily="Roboto,sans-serif" fontSize="14" fontWeight="700">
           YouTube
         </text>
       )}
@@ -209,7 +213,7 @@ export default function Navbar() {
           <button onClick={() => dispatch(toggleSidebar())} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yt-bg3 transition-colors">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" /></svg>
           </button>
-          <div className="flex items-center gap-1 cursor-pointer" onClick={() => navigate("/")}>
+          <div className="flex items-center gap-1 cursor-pointer text-yt-text" onClick={() => navigate("/")}>
             <YTLogo showText />
             <span className="text-[10px] text-yt-text2 self-start mt-0.5 font-medium">IN</span>
           </div>

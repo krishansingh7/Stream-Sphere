@@ -21,7 +21,46 @@ export default {
       fontFamily: {
         roboto: ['Roboto', 'sans-serif'],
       },
+      keyframes: {
+        fadeIn: {
+          '0%':   { opacity: '0', transform: 'scale(0.97)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.15s ease-out forwards',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        // Completely hides the scrollbar (keeps scroll working)
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
+        },
+        // Slim 3px scrollbar that matches the app theme
+        '.scrollbar-thin': {
+          'scrollbar-width': 'thin',
+          'scrollbar-color': 'var(--yt-bg3) transparent',
+          '&::-webkit-scrollbar': {
+            height: '3px',
+            width: '3px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'var(--yt-bg3)',
+            'border-radius': '9999px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: 'var(--yt-text3)',
+          },
+        },
+      })
+    },
+  ],
 }

@@ -297,7 +297,7 @@ export default function Sidebar() {
             <div className="border-t border-yt-border my-3" />
             <div className="px-3 py-3 flex flex-col gap-3">
               <p className="text-sm text-yt-text2">
-                Sign in to like videos, comment, and subscribe.
+                Sign in to like videos, save, watch history and playlist.
               </p>
               <button
                 onClick={handleSignIn}
