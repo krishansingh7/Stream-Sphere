@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useRelatedVideos } from '../../hooks/api/useRelatedVideos'
-import { formatViews, formatDuration, timeAgo, getThumbnail } from '../../utils/formatters'
+import { formatViews, formatDuration, timeAgo, getThumbnail, parseDurationToSeconds } from '../../utils/formatters'
 
 function RelatedCard({ video }) {
   const navigate = useNavigate()
@@ -64,13 +64,21 @@ function RelatedSkeleton() {
 export default function RecommendedList({ videoId, channelId, categoryId, title }) {
   const { data: related = [], isLoading } = useRelatedVideos(videoId, channelId, categoryId, title)
 
+  // Filter out shorts (duration <= 61s)
+  const regularVideos = related.filter((v) => {
+    const durationStr = v.contentDetails?.duration
+    if (!durationStr) return true
+    const durationSec = parseDurationToSeconds(durationStr)
+    return durationSec > 61 || durationSec === 0 // 0 catches live streams
+  })
+
   return (
     <div className="flex flex-col gap-2">
       {isLoading
         ? Array.from({ length: 10 }).map((_, i) => <RelatedSkeleton key={i} />)
-        : related.length === 0
+        : regularVideos.length === 0
           ? <p className="text-yt-text2 text-sm text-center py-8">No recommendations available</p>
-          : related.map((v) => (
+          : regularVideos.map((v) => (
               <RelatedCard key={v.id?.videoId || v.id} video={v} />
             ))
       }

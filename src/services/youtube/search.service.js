@@ -31,41 +31,29 @@ export const searchVideos = ({ query, pageToken = '', order = 'relevance' } = {}
 // Related/recommended videos — replaces deprecated relatedToVideoId
 // Strategy: search by channel + category for best results
 export const getRelatedVideos = async ({ videoId, channelId, categoryId, title } = {}) => {
-  // Extract keywords from title for relevant results
+  // Extract keywords from title for highly relevant topic clustering
   const keywords = title
     ? title.split(' ').slice(0, 4).join(' ')
     : ''
 
-  try {
-    // First try: search by channel (most relevant)
-    if (channelId) {
-      const res = await youtubeClient.get('/search', {
-        params: {
-          part: 'snippet',
-          channelId,
-          type: 'video',
-          maxResults: 15,
-          order: 'relevance',
-          regionCode: REGION_CODE,
-        },
-      })
-      const items = (res.data.items || []).filter(
-        (v) => (v.id?.videoId || v.id) !== videoId
-      )
-      if (items.length >= 5) return { data: { items } }
-    }
-  } catch {}
-
-  // Fallback: search by keywords
-  return youtubeClient.get('/search', {
+  // Search by keywords and category for diverse related content
+  // This avoids being trapped in a single channel's upload history (which might be 90% shorts)
+  const res = await youtubeClient.get('/search', {
     params: {
       part: 'snippet',
       q: keywords || 'trending india',
       type: 'video',
-      maxResults: 15,
+      maxResults: 50,
       regionCode: REGION_CODE,
       order: 'relevance',
       ...(categoryId ? { videoCategoryId: categoryId } : {}),
     },
   })
+
+  // Filter out the currently playing video from the results
+  const items = (res.data.items || []).filter(
+    (v) => (v.id?.videoId || v.id) !== videoId
+  )
+
+  return { data: { items } }
 }
