@@ -168,7 +168,7 @@ export default function VideoInfo({ video }) {
         <p className="text-sm font-semibold text-yt-text mb-1">
           {formatViews(statistics?.viewCount)}&nbsp;·&nbsp;{timeAgo(snippet?.publishedAt)}
         </p>
-        <p className={`text-sm text-yt-text leading-relaxed whitespace-pre-wrap ${!expanded ? "line-clamp-2" : ""}`}>
+        <p className={`text-sm text-yt-text leading-relaxed whitespace-pre-wrap break-words ${!expanded ? "line-clamp-2" : ""}`}>
           {snippet?.description}
         </p>
         {snippet?.description?.length > 120 && (

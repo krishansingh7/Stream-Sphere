@@ -30,12 +30,12 @@ export default function Search() {
   if (isError) return <ErrorMessage message="Search failed. You may have exceeded your API quota." />
 
   return (
-    <div className="px-6 py-4">
-      <p className="text-yt-text2 text-sm mb-4">
+    <div className="py-2 sm:py-4 px-0 sm:px-6">
+      <p className="text-yt-text2 text-sm mb-4 px-4 sm:px-0">
         {!isLoading && `Results for "${query}"`}
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-x-4 gap-y-10 mt-2">
         {isLoading
           ? Array.from({ length: 12 }).map((_, i) => <VideoCardSkeleton key={i} />)
           : videos.map((video) => <VideoCard key={video.id?.videoId || video.id} video={video} />)

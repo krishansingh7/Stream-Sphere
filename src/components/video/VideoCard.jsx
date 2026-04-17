@@ -31,7 +31,7 @@ const VideoCard = ({ video }) => {
   return (
     <div className="group flex flex-col cursor-pointer" onClick={handleClick}>
       {/* Thumbnail */}
-      <div className="relative aspect-video rounded-xl overflow-hidden bg-yt-bg2 mb-3">
+      <div className="relative aspect-video sm:rounded-xl overflow-hidden bg-yt-bg2 mb-3">
         <img
           src={thumbnail}
           alt={snippet.title}
@@ -46,7 +46,7 @@ const VideoCard = ({ video }) => {
       </div>
 
       {/* Meta */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 px-3 sm:px-0">
         {/* Channel avatar — real image or initial fallback */}
         <div
           className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden cursor-pointer bg-yt-bg3"

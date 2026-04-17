@@ -29,7 +29,7 @@ export default function CommentItem({ comment }) {
           </span>
         </div>
 
-        <p className="text-sm text-yt-text leading-relaxed">
+        <p className="text-sm text-yt-text leading-relaxed whitespace-pre-wrap break-words">
           {snippet.textOriginal}
         </p>
 

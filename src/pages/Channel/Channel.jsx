@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useChannelDetails } from '../../hooks/api/useChannelDetails'
 import { useChannelVideosInfinite } from '../../hooks/api/useChannelVideosInfinite'
-import { formatSubscribers, formatViews, formatDuration, timeAgo, getThumbnail } from '../../utils/formatters'
+import { formatSubscribers, formatViews, formatDuration, timeAgo, getThumbnail, parseDurationToSeconds } from '../../utils/formatters'
 import VideoCardSkeleton from '../../components/video/VideoCardSkeleton'
 import Spinner from '../../components/common/Spinner'
 import ErrorMessage from '../../components/common/ErrorMessage'
@@ -51,6 +51,43 @@ function ChannelVideoCard({ item }) {
   )
 }
 
+// ─── Channel Short Card (vertical) ───────────────────────────────────────────
+function ChannelShortCard({ item }) {
+  const navigate = useNavigate()
+  const videoId = item.contentDetails?.videoId || item.snippet?.resourceId?.videoId
+  if (!videoId || !item.snippet) return null
+
+  const thumbnail = getThumbnail(item.snippet.thumbnails)
+  const views = formatViews(item.statistics?.viewCount)
+
+  return (
+    <div
+      className="group flex flex-col cursor-pointer"
+      onClick={() => navigate(`/watch?v=${videoId}`)}
+    >
+      <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-yt-bg2 mb-2">
+        <img
+          src={thumbnail}
+          alt={item.snippet.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          loading="lazy"
+        />
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 opacity-90 drop-shadow-md">
+          <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+             <path d="M17.77,10.32l-1.2-0.5L18,9c1.66-0.03,3-1.4,3-3.07c-0.01-0.9-0.4-1.72-0.98-2.3A3.07,3.07,0,0,0,17.93,3 a3.07,3.07,0,0,0-2.17,0.9L14,5.66l-0.63-0.27C12.3,5.1,11.18,5,10,5C5.58,5,2,8.13,2,12s3.58,7,8,7c2.97,0,5.58-1.61,7.04-4.01 L18.71,12l-0.94-1.68z M10,17c-3.31,0-6-2.24-6-5s2.69-5,6-5c0.76,0,1.5,0.14,2.17,0.38l-3.46,2.35A2,2,0,0,0,9,12c0,1.1,0.9,2,2,2 h0.03l3.4-2.31C13.84,13.65,12.07,15,10,17z" />
+          </svg>
+          <span className="text-white text-xs font-semibold">{views}</span>
+        </div>
+      </div>
+      <div className="min-w-0">
+        <h3 className="text-sm font-medium text-yt-text line-clamp-2 leading-snug">
+          {item.snippet.title}
+        </h3>
+      </div>
+    </div>
+  )
+}
+
 // ─── Tab Button ───────────────────────────────────────────────────────────────
 function TabButton({ active, onClick, children }) {
   return (
@@ -61,7 +98,7 @@ function TabButton({ active, onClick, children }) {
     >
       {children}
       {active && (
-        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-yt-text rounded-t-full" />
+        <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-yt-text rounded-t-full" />
       )}
     </button>
   )
@@ -83,7 +120,21 @@ export default function Channel() {
     isFetchingNextPage,
   } = useChannelVideosInfinite(channelId)
 
-  const videos = data?.pages?.flatMap((p) => p.items) ?? []
+  const videosAll = data?.pages?.flatMap((p) => p.items) ?? []
+  
+  const videos = []
+  const shorts = []
+
+  videosAll.forEach((item) => {
+    const durationStr = item.contentDetails?.duration
+    const durationSec = parseDurationToSeconds(durationStr)
+    // usually shorts are slightly <= 60 seconds
+    if (durationSec > 0 && durationSec <= 61) {
+      shorts.push(item)
+    } else {
+      videos.push(item)
+    }
+  })
 
   // Intersection Observer for infinite scroll
   const loaderRef = useCallback(
@@ -176,7 +227,7 @@ export default function Channel() {
 
       {/* ── Tabs ── */}
       <div className="border-b border-yt-border px-4 sm:px-8 flex overflow-x-auto hide-scrollbar">
-        {['videos', 'about'].map((tab) => (
+        {['videos', 'shorts', 'about'].map((tab) => (
           <TabButton key={tab} active={activeTab === tab} onClick={() => setActiveTab(tab)}>
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </TabButton>
@@ -185,23 +236,44 @@ export default function Channel() {
 
       {/* ── Videos Tab ── */}
       {activeTab === 'videos' && (
-        <div className="px-4 sm:px-6 py-6">
-          {/* Sort bar */}
-          <div className="flex items-center gap-3 mb-6">
+        <div className="py-2 sm:py-6 px-0 sm:px-6">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6 px-4 sm:px-0">
             <span className="text-sm text-yt-text2 font-medium">Latest</span>
           </div>
 
-          {/* Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-x-4 gap-y-10 mt-2">
             {videosLoading
               ? Array.from({ length: 12 }).map((_, i) => <VideoCardSkeleton key={i} />)
-              : videos.map((item) => {
-                  const videoId = item.contentDetails?.videoId || item.snippet?.resourceId?.videoId
-                  return <ChannelVideoCard key={videoId} item={item} />
-                })}
+              : videos.length === 0 && !isFetchingNextPage
+                ? <p className="text-yt-text2 pt-4">No videos available.</p>
+                : videos.map((item) => {
+                    const videoId = item.contentDetails?.videoId || item.snippet?.resourceId?.videoId
+                    return <ChannelVideoCard key={videoId} item={item} />
+                  })}
           </div>
 
-          {/* Infinite scroll loader */}
+          <div ref={loaderRef} className="flex justify-center py-8">
+            {isFetchingNextPage && <Spinner />}
+          </div>
+        </div>
+      )}
+
+      {/* ── Shorts Tab ── */}
+      {activeTab === 'shorts' && (
+        <div className="py-2 sm:py-6 px-1 sm:px-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-x-1 sm:gap-x-3 gap-y-1 sm:gap-y-6 mt-2">
+            {videosLoading
+              ? Array.from({ length: 12 }).map((_, i) => (
+                  <div key={i} className="aspect-[9/16] bg-yt-bg2 rounded-xl animate-pulse" />
+                ))
+              : shorts.length === 0 && !isFetchingNextPage
+                ? <div className="col-span-full"><p className="text-yt-text2 pt-4">No shorts available.</p></div>
+                : shorts.map((item) => {
+                    const videoId = item.contentDetails?.videoId || item.snippet?.resourceId?.videoId
+                    return <ChannelShortCard key={videoId} item={item} />
+                  })}
+          </div>
+
           <div ref={loaderRef} className="flex justify-center py-8">
             {isFetchingNextPage && <Spinner />}
           </div>

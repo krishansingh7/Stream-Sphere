@@ -17,9 +17,9 @@ export default function History() {
     );
 
   return (
-    <div className="px-6 py-6 max-w-4xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-yt-text">Watch history</h1>
+    <div className="py-2 sm:py-6 max-w-4xl mx-auto md:mx-0 md:px-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6 px-4 sm:px-0">
+        <h1 className="text-xl sm:text-2xl font-semibold text-yt-text">Watch history</h1>
         {history.length > 0 && (
           <button
             onClick={() => {
