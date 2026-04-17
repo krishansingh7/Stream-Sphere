@@ -17,7 +17,7 @@ export default function WatchLater() {
     );
 
   return (
-    <div className="py-2 sm:py-6 max-w-4xl mx-auto md:mx-0 md:px-6">
+    <div className="py-2 sm:py-6 max-w-4xl mx-auto md:px-6">
       <h1 className="text-xl sm:text-2xl font-semibold text-yt-text mb-4 sm:mb-6 px-4 sm:px-0">Watch later</h1>
 
       {watchLater.length === 0 ? (

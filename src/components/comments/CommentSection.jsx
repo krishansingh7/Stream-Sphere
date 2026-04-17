@@ -69,7 +69,7 @@ export default function CommentSection({ videoId, commentCount }) {
 
         <CommentForm videoId={videoId} onCommentPosted={refetch} />
 
-        <div className="divide-y divide-yt-border/30 mt-4">
+        <div className="flex flex-col gap-5 mt-6">
           {isLoading ? (
             <div className="py-8">
               <Spinner />

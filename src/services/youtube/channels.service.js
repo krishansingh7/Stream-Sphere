@@ -40,3 +40,25 @@ export const getVideoStatsBatch = (videoIds = []) =>
       id: videoIds.join(','),
     },
   })
+
+// Get all public playlists of a channel
+export const getChannelPlaylists = ({ channelId, pageToken = '' } = {}) =>
+  youtubeClient.get('/playlists', {
+    params: {
+      part: 'snippet,contentDetails',
+      channelId,
+      maxResults: 50,
+      pageToken: pageToken || undefined,
+    },
+  })
+
+// Get videos inside a specific playlist
+export const getPlaylistItems = ({ playlistId, pageToken = '' } = {}) =>
+  youtubeClient.get('/playlistItems', {
+    params: {
+      part: 'snippet,contentDetails',
+      playlistId,
+      maxResults: 50,
+      pageToken: pageToken || undefined,
+    },
+  })

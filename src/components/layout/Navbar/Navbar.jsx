@@ -263,12 +263,12 @@ export default function Navbar() {
           {user ? (
             <div className="relative">
               <button onClick={() => setShowUserMenu((p) => !p)} className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-transparent hover:ring-yt-border transition-all">
-                {user.photoURL ? <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : <div className="w-full h-full bg-yt-red flex items-center justify-center text-white text-sm font-medium">{user.displayName?.[0]?.toUpperCase()}</div>}
+                {user.photoURL ? <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full text-yt-text3 bg-yt-bg3"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>}
               </button>
               {showUserMenu && (
                 <div className="absolute right-0 top-11 w-56 bg-yt-bg2 border border-yt-border rounded-xl shadow-2xl z-50 overflow-hidden">
                   <div className="flex items-center gap-3 px-4 py-3 border-b border-yt-border">
-                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">{user.photoURL ? <img src={user.photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : <div className="w-full h-full bg-yt-red flex items-center justify-center text-white font-medium">{user.displayName?.[0]?.toUpperCase()}</div>}</div>
+                    <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">{user.photoURL ? <img src={user.photoURL} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" /> : <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full text-yt-text3 bg-yt-bg3"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>}</div>
                     <div className="min-w-0"><p className="text-sm font-medium text-yt-text truncate">{user.displayName}</p><p className="text-xs text-yt-text2 truncate">{user.email}</p></div>
                   </div>
                   <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-yt-text hover:bg-yt-bg3 transition-colors">

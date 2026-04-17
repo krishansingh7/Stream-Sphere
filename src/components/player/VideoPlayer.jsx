@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import ReactPlayer from 'react-player/lazy'
 
-export default function VideoPlayer({ videoId }) {
+export default function VideoPlayer({ videoId, onEnded }) {
   const [mounted, setMounted] = useState(false)
 
   // Wait until client is mounted to render player — fixes addEventListener null error
@@ -16,6 +16,7 @@ export default function VideoPlayer({ videoId }) {
           height="100%"
           controls
           playing
+          onEnded={onEnded}
           fallback={<div className="w-full h-full bg-yt-bg2 animate-pulse" />}
           config={{
             youtube: {

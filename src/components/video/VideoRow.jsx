@@ -83,17 +83,25 @@ const VideoRow = ({ video, onRemove }) => {
 
       {/* ── Confirm delete overlay ── */}
       {confirmDelete && (
-        <div className="absolute inset-0 top-0 bottom-4 mx-3 sm:mx-0 sm:-mx-2 sm:bottom-0 flex items-center justify-between gap-3 px-4 bg-yt-bg2 rounded-xl border border-yt-border z-10 animate-fadeIn">
-          <div className="flex items-center gap-2 min-w-0">
-            <svg className="w-5 h-5 text-yt-red flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
-            </svg>
-            <p className="text-sm text-yt-text truncate">Remove from history?</p>
+        <div className="absolute inset-0 top-0 bottom-4 mx-3 sm:mx-0 sm:-mx-2 sm:bottom-0 flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-5 sm:gap-3 p-6 sm:px-4 sm:py-0 bg-yt-bg2/95 sm:bg-yt-bg2 backdrop-blur-md sm:backdrop-blur-none rounded-2xl sm:rounded-xl border border-yt-border z-10 animate-fadeIn shadow-2xl sm:shadow-none">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-2 text-center sm:text-left min-w-0">
+            <div className="w-14 h-14 sm:w-auto sm:h-auto rounded-full bg-yt-red/10 sm:bg-transparent flex items-center justify-center flex-shrink-0 mb-1 sm:mb-0">
+              <svg className="w-7 h-7 sm:w-5 sm:h-5 text-yt-red" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-lg sm:text-sm font-semibold sm:font-medium text-yt-text truncate">Remove video?</p>
+              <p className="text-sm text-yt-text2 mt-1.5 sm:hidden">This will permanently remove it from this list.</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0 flex-shrink-0">
             <button
-              onClick={() => setConfirmDelete(false)}
-              className="px-3 py-1.5 text-xs font-medium text-yt-text2 rounded-full hover:bg-yt-bg3 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation()
+                setConfirmDelete(false)
+              }}
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-medium text-yt-text bg-yt-bg3 sm:bg-transparent rounded-full hover:bg-yt-border sm:hover:bg-yt-bg3 transition-colors"
             >
               Cancel
             </button>
@@ -102,7 +110,7 @@ const VideoRow = ({ video, onRemove }) => {
                 e.stopPropagation()
                 onRemove(videoId)
               }}
-              className="px-3 py-1.5 text-xs font-semibold text-white bg-yt-red rounded-full hover:opacity-90 active:scale-95 transition-all"
+              className="flex-1 sm:flex-none px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-semibold text-white bg-yt-red rounded-full hover:bg-red-600 active:scale-95 transition-all shadow-lg sm:shadow-none"
             >
               Remove
             </button>

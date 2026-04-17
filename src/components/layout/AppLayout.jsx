@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Navbar from "./Navbar/Navbar";
 import Sidebar from "./Sidebar/Sidebar";
@@ -7,6 +7,8 @@ import PersistentPlayer from "../player/PersistentPlayer";
 
 export default function AppLayout() {
   const { sidebarOpen } = useSelector((s) => s.ui);
+  const location = useLocation();
+  const isWatchPage = location.pathname === "/watch" || location.pathname === "/playlist";
 
   return (
     <div className="min-h-screen bg-yt-bg text-yt-text font-roboto">
@@ -17,7 +19,7 @@ export default function AppLayout() {
       {/* Main content — top offset for navbar, bottom offset for mobile tab bar */}
       <main
         className={`pt-14 pb-14 md:pb-0 transition-all duration-200 ml-0 ${
-          sidebarOpen ? "md:ml-60" : "md:ml-20"
+          isWatchPage ? "md:ml-0" : sidebarOpen ? "md:ml-60" : "md:ml-20"
         }`}
       >
         <Outlet />

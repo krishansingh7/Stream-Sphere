@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux";
 import { toggleSidebar } from "../../../store/slices/uiSlice";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { signInWithGoogle } from "../../../services/firebase";
 import { useUserData } from "../../../context/UserDataContext";
 import toast from "react-hot-toast";
@@ -164,6 +164,8 @@ export default function Sidebar() {
   const { sidebarOpen } = useSelector((s) => s.ui);
   const { user } = useSelector((s) => s.auth);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isWatchPage = location.pathname === "/watch" || location.pathname === "/playlist";
   const { playlist } = useUserData();
   const playlistCount = playlist.length;
 
@@ -186,6 +188,8 @@ export default function Sidebar() {
 
   // When closed, render mini-sidebar ONLY on desktop
   if (!sidebarOpen) {
+    if (isWatchPage) return null; // Real YouTube has no mini sidebar on Watch page
+
     return (
       <aside className="hidden md:flex fixed top-14 left-0 w-20 h-[calc(100vh-56px)] bg-yt-bg z-40 flex-col items-center py-2 overflow-y-auto hide-scrollbar">
         <MiniItem to="/" icon={<HomeIcon />} label="Home" />
@@ -227,10 +231,10 @@ export default function Sidebar() {
   return (
     <>
       <div 
-        className="md:hidden fixed inset-0 top-14 bg-black/50 z-40"
+        className={`${isWatchPage ? "block" : "md:hidden"} fixed inset-0 top-14 bg-black/50 z-40`}
         onClick={() => dispatch(toggleSidebar())}
       />
-      <aside className="fixed top-14 left-0 w-60 h-[calc(100vh-56px)] overflow-y-auto bg-yt-bg z-50 pb-6 hide-scrollbar shadow-2xl md:shadow-none">
+      <aside className={`fixed top-14 left-0 w-60 h-[calc(100vh-56px)] overflow-y-auto bg-yt-bg z-50 pb-6 hide-scrollbar ${isWatchPage ? "shadow-2xl" : "shadow-2xl md:shadow-none"}`}>
         <div className="px-3 py-2">
           <div className="mb-1">
           <FullItem to="/" icon={<HomeIcon />} label="Home" />

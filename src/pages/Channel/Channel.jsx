@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useChannelDetails } from '../../hooks/api/useChannelDetails'
 import { useChannelVideosInfinite } from '../../hooks/api/useChannelVideosInfinite'
+import { useChannelPlaylists } from '../../hooks/api/useChannelPlaylists'
 import { formatSubscribers, formatViews, formatDuration, timeAgo, getThumbnail, parseDurationToSeconds } from '../../utils/formatters'
 import VideoCardSkeleton from '../../components/video/VideoCardSkeleton'
 import Spinner from '../../components/common/Spinner'
@@ -88,6 +89,46 @@ function ChannelShortCard({ item }) {
   )
 }
 
+// ─── Channel Playlist Card ─────────────────────────────────────────────────────
+function ChannelPlaylistCard({ item }) {
+  const navigate = useNavigate()
+  const playlistId = item.id
+  if (!playlistId || !item.snippet) return null
+
+  const thumbnail = getThumbnail(item.snippet.thumbnails)
+  const videoCount = item.contentDetails?.itemCount || 0
+
+  return (
+    <div
+      className="group flex flex-col cursor-pointer"
+      onClick={() => navigate(`/watch?list=${playlistId}`)}
+    >
+      <div className="relative aspect-video rounded-xl overflow-hidden bg-yt-bg2 mb-2">
+        <img
+          src={thumbnail}
+          alt={item.snippet.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          loading="lazy"
+        />
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/80 px-2 py-1 rounded drop-shadow-md">
+          <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22,7H2v1h20V7z M13,12H2v-1h11V12z M13,16H2v-1h11V16z M15,19v-8l7,4L15,19z" />
+          </svg>
+          <span className="text-white text-xs font-semibold">{videoCount} videos</span>
+        </div>
+      </div>
+      <div className="min-w-0">
+        <h3 className="text-sm font-medium text-yt-text line-clamp-2 leading-snug">
+          {item.snippet.title}
+        </h3>
+        <p className="text-[13px] text-yt-text2 mt-1 hover:text-yt-text transition-colors font-medium">
+          View full playlist
+        </p>
+      </div>
+    </div>
+  )
+}
+
 // ─── Tab Button ───────────────────────────────────────────────────────────────
 function TabButton({ active, onClick, children }) {
   return (
@@ -119,6 +160,14 @@ export default function Channel() {
     hasNextPage,
     isFetchingNextPage,
   } = useChannelVideosInfinite(channelId)
+  
+  const {
+    data: playlistsData,
+    isLoading: playlistsLoading,
+    fetchNextPage: fetchNextPlaylistPage,
+    hasNextPage: hasNextPlaylistPage,
+    isFetchingNextPage: isFetchingNextPlaylistPage,
+  } = useChannelPlaylists(channelId)
 
   const videosAll = data?.pages?.flatMap((p) => p.items) ?? []
   
@@ -139,14 +188,20 @@ export default function Channel() {
   // Intersection Observer for infinite scroll
   const loaderRef = useCallback(
     (node) => {
-      if (isFetchingNextPage) return
+      if (isFetchingNextPage || isFetchingNextPlaylistPage) return
       if (observerRef.current) observerRef.current.disconnect()
       observerRef.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasNextPage) fetchNextPage()
+        if (entries[0].isIntersecting) {
+          if (activeTab === 'playlists' && hasNextPlaylistPage) {
+            fetchNextPlaylistPage()
+          } else if ((activeTab === 'videos' || activeTab === 'shorts') && hasNextPage) {
+            fetchNextPage()
+          }
+        }
       })
       if (node) observerRef.current.observe(node)
     },
-    [isFetchingNextPage, hasNextPage, fetchNextPage]
+    [isFetchingNextPage, hasNextPage, fetchNextPage, isFetchingNextPlaylistPage, hasNextPlaylistPage, fetchNextPlaylistPage, activeTab]
   )
 
   if (channelLoading)
@@ -227,7 +282,7 @@ export default function Channel() {
 
       {/* ── Tabs ── */}
       <div className="border-b border-yt-border px-4 sm:px-8 flex overflow-x-auto hide-scrollbar">
-        {['videos', 'shorts', 'about'].map((tab) => (
+        {['videos', 'shorts', 'playlists', 'about'].map((tab) => (
           <TabButton key={tab} active={activeTab === tab} onClick={() => setActiveTab(tab)}>
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </TabButton>
@@ -276,6 +331,29 @@ export default function Channel() {
 
           <div ref={loaderRef} className="flex justify-center py-8">
             {isFetchingNextPage && <Spinner />}
+          </div>
+        </div>
+      )}
+
+      {/* ── Playlists Tab ── */}
+      {activeTab === 'playlists' && (
+        <div className="py-2 sm:py-6 px-0 sm:px-6">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6 px-4 sm:px-0">
+            <span className="text-sm text-yt-text2 font-medium">Created playlists</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-x-4 gap-y-10 mt-2">
+            {playlistsLoading
+              ? Array.from({ length: 12 }).map((_, i) => <VideoCardSkeleton key={i} />)
+              : !playlistsData?.pages?.[0]?.items?.length && !isFetchingNextPlaylistPage
+                ? <p className="text-yt-text2 pt-4">No playlists available.</p>
+                : playlistsData.pages.flatMap(p => p.items).map((item) => (
+                    <ChannelPlaylistCard key={item.id} item={item} />
+                  ))}
+          </div>
+
+          <div ref={loaderRef} className="flex justify-center py-8">
+            {isFetchingNextPlaylistPage && <Spinner />}
           </div>
         </div>
       )}
