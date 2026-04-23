@@ -1,6 +1,6 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ReactPlayer from "react-player/lazy";
+import VideoPlayer from "../../components/player/VideoPlayer";
 import { useUserData } from "../../context/UserDataContext";
 import { formatViews, formatDuration, timeAgo } from "../../utils/formatters";
 import EmptyState from "../../components/common/EmptyState";
@@ -11,15 +11,9 @@ export default function Playlist() {
   const navigate = useNavigate();
   const { playlist, removeFromPlaylist, clearPlaylist } = useUserData();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const playerRef = useRef(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
     if (playlist.length > 0 && currentIndex >= playlist.length)
@@ -44,10 +38,7 @@ export default function Playlist() {
   }, [currentIndex, playlist.length, isShuffle]);
 
   const handleEnded = useCallback(() => {
-    if (isRepeat) {
-      setIsPlaying(true);
-      return;
-    }
+    if (isRepeat) return; // VideoPlayer loops internally on repeat? No — we handle next track
     if (currentIndex < playlist.length - 1 || isShuffle) goNext();
     else setIsPlaying(false);
   }, [currentIndex, playlist.length, isRepeat, isShuffle, goNext]);
@@ -63,93 +54,47 @@ export default function Playlist() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-56px)] min-h-0 overflow-hidden">
+    <div className="flex flex-col lg:flex-row gap-0 h-[calc(100vh-56px)] min-h-0 overflow-hidden lg:p-4 lg:gap-4 bg-yt-bg">
       {/* Player */}
-      <div className="flex-none lg:flex-1 flex flex-col bg-black min-w-0 border-b lg:border-b-0 border-yt-border">
-        <div className="relative w-full lg:flex-1 aspect-video lg:aspect-auto bg-black">
-          {mounted && current && (
-            <ReactPlayer
-              ref={playerRef}
-              url={`https://www.youtube.com/watch?v=${current.id}`}
-              width="100%"
-              height="100%"
-              controls
-              playing={isPlaying}
+      <div className="flex-none lg:flex-1 flex flex-col bg-yt-bg min-w-0">
+        <div className="relative w-full lg:flex-1 aspect-video lg:aspect-auto bg-black lg:rounded-xl overflow-hidden">
+          {current && (
+            <VideoPlayer
+              key={current.id}
+              videoId={current.id}
               onEnded={handleEnded}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              config={{ youtube: { playerVars: { autoplay: 1, rel: 0 } } }}
-              style={{ position: "absolute", top: 0, left: 0 }}
             />
           )}
         </div>
+        {/* Queue navigation bar */}
         {current && (
-          <div className="px-4 py-3 bg-yt-bg border-t border-yt-border flex-none">
-            <p className="text-sm font-semibold text-yt-text line-clamp-1">
-              {current.title}
-            </p>
-            <p className="text-xs text-yt-text2 mt-0.5">
-              {current.channelTitle} · {formatViews(current.viewCount)}
-            </p>
+          <div className="flex flex-col gap-2 px-4 py-3 bg-yt-bg2 lg:rounded-xl mt-2 border border-yt-border flex-none">
+            {/* Track info */}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-yt-text line-clamp-1">{current.title}</p>
+              <p className="text-xs text-yt-text2 mt-0.5">{current.channelTitle} · {currentIndex + 1} of {playlist.length}</p>
+            </div>
+            {/* Prev / Shuffle / Next / Repeat */}
+            <div className="flex items-center justify-between">
+              <button onClick={() => setIsShuffle(p => !p)} title="Shuffle" className={`p-2 rounded-full transition-colors ${isShuffle ? "text-yt-blue bg-blue-900/20" : "text-yt-text2 hover:bg-yt-bg3"}`}>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+              </button>
+              <button onClick={goPrev} disabled={playlist.length <= 1} className="p-2 rounded-full text-yt-text hover:bg-yt-bg3 transition-colors disabled:opacity-30">
+                <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+              </button>
+              <button onClick={goNext} disabled={playlist.length <= 1} className="p-2 rounded-full text-yt-text hover:bg-yt-bg3 transition-colors disabled:opacity-30">
+                <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              </button>
+              <button onClick={() => setIsRepeat(p => !p)} title="Repeat" className={`p-2 rounded-full transition-colors ${isRepeat ? "text-yt-blue bg-blue-900/20" : "text-yt-text2 hover:bg-yt-bg3"}`}>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+              </button>
+            </div>
           </div>
         )}
-        {/* Controls */}
-        <div className="flex items-center justify-between px-6 py-4 bg-yt-bg border-t border-yt-border flex-none">
-          <button
-            onClick={() => setIsShuffle((p) => !p)}
-            title="Shuffle"
-            className={`p-2 rounded-full transition-colors ${isShuffle ? "text-yt-blue bg-blue-900/20" : "text-yt-text2 hover:bg-yt-bg3"}`}
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z" />
-            </svg>
-          </button>
-          <button
-            onClick={goPrev}
-            disabled={playlist.length <= 1}
-            className="p-2 rounded-full text-yt-text hover:bg-yt-bg3 transition-colors disabled:opacity-30"
-          >
-            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setIsPlaying((p) => !p)}
-            className="w-14 h-14 bg-yt-text text-yt-bg rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg"
-          >
-            {isPlaying ? (
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            )}
-          </button>
-          <button
-            onClick={goNext}
-            disabled={playlist.length <= 1}
-            className="p-2 rounded-full text-yt-text hover:bg-yt-bg3 transition-colors disabled:opacity-30"
-          >
-            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
-            </svg>
-          </button>
-          <button
-            onClick={() => setIsRepeat((p) => !p)}
-            title="Repeat"
-            className={`p-2 rounded-full transition-colors ${isRepeat ? "text-yt-blue bg-blue-900/20" : "text-yt-text2 hover:bg-yt-bg3"}`}
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" />
-            </svg>
-          </button>
-        </div>
       </div>
 
       {/* Playlist sidebar */}
-      <div className="flex-1 lg:flex-none lg:w-[380px] flex flex-col bg-yt-bg border-l border-yt-border min-h-0 overflow-hidden pb-[60px] md:pb-0">
+      <div className="flex-1 lg:flex-none lg:w-[380px] flex flex-col bg-yt-bg2 lg:rounded-xl border border-yt-border min-h-0 overflow-hidden pb-[60px] md:pb-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-yt-border flex-shrink-0">
           <div>
             <h2 className="text-base font-semibold text-yt-text">

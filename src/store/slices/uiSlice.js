@@ -4,6 +4,7 @@ const initialState = {
   sidebarOpen: window.innerWidth >= 1024,
   sidebarMini: false,
   theme: localStorage.getItem('theme') || 'dark',
+  theaterMode: false,
 }
 
 const uiSlice = createSlice({
@@ -28,8 +29,14 @@ const uiSlice = createSlice({
         document.documentElement.classList.remove('dark')
       }
     },
+    toggleTheaterMode(state) {
+      state.theaterMode = !state.theaterMode
+    },
+    setTheaterMode(state, action) {
+      state.theaterMode = action.payload
+    },
   },
 })
 
-export const { toggleSidebar, setSidebarOpen, toggleSidebarMini, toggleTheme } = uiSlice.actions
+export const { toggleSidebar, setSidebarOpen, toggleSidebarMini, toggleTheme, toggleTheaterMode, setTheaterMode } = uiSlice.actions
 export default uiSlice.reducer

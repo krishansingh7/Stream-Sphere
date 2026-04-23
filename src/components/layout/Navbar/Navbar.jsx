@@ -209,51 +209,53 @@ export default function Navbar() {
       {/* ═══════════════════════════════════════════════════
           DESKTOP HEADER (md and up)
       ═══════════════════════════════════════════════════ */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 h-14 bg-yt-bg z-50 items-center justify-between px-4 gap-4">
-        {/* Left */}
-        <div className="flex items-center gap-4 min-w-[160px]">
+      <header className="hidden md:flex fixed top-0 left-0 right-0 h-14 bg-yt-bg z-50 items-center px-2 gap-2">
+        {/* Left — hamburger + logo */}
+        <div className="flex items-center gap-3 min-w-[180px] xl:min-w-[220px] flex-shrink-0">
           <button onClick={() => dispatch(toggleSidebar())} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yt-bg3 transition-colors">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" /></svg>
           </button>
-          <div className="flex items-center cursor-pointer text-yt-text group" onClick={() => navigate("/")}>
+          <div className="flex items-center cursor-pointer text-yt-text" onClick={() => navigate("/")}>
             <YTLogo showText />
             <span className="text-[10px] text-yt-text2 self-start mt-0.5 ml-0.5 font-medium">IN</span>
           </div>
         </div>
 
-        {/* Center — search */}
-        <div className="flex items-center gap-2 flex-1 max-w-2xl">
-          <div className="relative flex-1">
-            <form onSubmit={handleSearch} className="flex h-10 border border-yt-border rounded-full overflow-visible focus-within:border-yt-blue">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputVal}
-                onChange={handleInputChange}
-                onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                onKeyDown={handleKeyDown}
-                placeholder="Search"
-                autoComplete="off"
-                className="flex-1 w-full min-w-0 bg-yt-bg px-5 pr-2 text-sm text-yt-text placeholder-yt-text3 outline-none rounded-l-full"
-              />
-              {inputVal && (
-                <button type="button" onMouseDown={(e) => { e.preventDefault(); setInputVal(""); searchQueryRef.current = ""; setSuggestions([]); setShowSuggestions(false); setActiveIndex(-1); setDebouncedQuery(""); inputRef.current?.focus(); }} className="flex-shrink-0 w-8 h-8 self-center mr-1 flex items-center justify-center rounded-full hover:bg-yt-bg3 text-yt-text2 transition-colors">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+        {/* Center — search bar, absolutely centered */}
+        <div className="flex-1 flex justify-center px-4">
+          <div className="flex items-center gap-2 w-full max-w-xl lg:max-w-2xl">
+            <div className="relative flex-1">
+              <form onSubmit={handleSearch} className="flex h-10 border border-yt-border rounded-full overflow-visible focus-within:border-yt-blue focus-within:shadow-[0_0_0_2px_rgba(62,166,255,0.15)]">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={inputVal}
+                  onChange={handleInputChange}
+                  onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search"
+                  autoComplete="off"
+                  className="flex-1 w-full min-w-0 bg-yt-bg px-5 pr-2 text-sm text-yt-text placeholder-yt-text3 outline-none rounded-l-full"
+                />
+                {inputVal && (
+                  <button type="button" onMouseDown={(e) => { e.preventDefault(); setInputVal(""); searchQueryRef.current = ""; setSuggestions([]); setShowSuggestions(false); setActiveIndex(-1); setDebouncedQuery(""); inputRef.current?.focus(); }} className="flex-shrink-0 w-8 h-8 self-center mr-1 flex items-center justify-center rounded-full hover:bg-yt-bg3 text-yt-text2 transition-colors">
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" /></svg>
+                  </button>
+                )}
+                <button type="submit" className="px-5 bg-yt-bg2 rounded-r-full hover:bg-yt-bg3 transition-colors flex items-center justify-center border-l border-yt-border">
+                  <SearchIcon />
                 </button>
-              )}
-              <button type="submit" className="px-5 bg-yt-bg2 rounded-r-full hover:bg-yt-bg3 transition-colors flex items-center justify-center border-l border-yt-border">
-                <SearchIcon />
-              </button>
-            </form>
-            <SuggestionList refProp={suggestRef} />
+              </form>
+              <SuggestionList refProp={suggestRef} />
+            </div>
+            <button onClick={handleMicClick} className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center border border-yt-border transition-colors ${supported ? "bg-yt-bg2 hover:bg-yt-bg3" : "bg-yt-bg2 opacity-50 cursor-not-allowed"}`}>
+              <MicIcon />
+            </button>
           </div>
-          <button onClick={handleMicClick} className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center border border-yt-border transition-colors ${supported ? "bg-yt-bg2 hover:bg-yt-bg3" : "bg-yt-bg2 opacity-50 cursor-not-allowed"}`}>
-            <MicIcon />
-          </button>
         </div>
 
-        {/* Right */}
-        <div className="flex items-center gap-2 min-w-[160px] justify-end">
+        {/* Right — theme + user */}
+        <div className="flex items-center gap-1.5 min-w-[180px] xl:min-w-[220px] flex-shrink-0 justify-end">
           <button onClick={() => dispatch(toggleTheme())} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-yt-bg3 transition-colors">
             {theme === "dark"
               ? <svg className="w-5 h-5 text-yt-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>

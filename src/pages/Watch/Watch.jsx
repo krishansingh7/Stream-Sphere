@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { setSidebarOpen } from "../../store/slices/uiSlice";
+import { setSidebarOpen, setTheaterMode } from "../../store/slices/uiSlice";
 import { useVideoDetails } from "../../hooks/api/useVideoDetails";
 import { useUserData } from "../../context/UserDataContext";
 import { toFirestoreVideo, getThumbnail } from "../../utils/formatters";
@@ -21,6 +21,7 @@ export default function Watch() {
   const playlistId = searchParams.get("list");
   const dispatch = useDispatch();
   const { user } = useSelector((s) => s.auth);
+  const theaterMode = useSelector((s) => s.ui.theaterMode);
   const { data: video, isLoading, isError } = useVideoDetails(videoId);
   const { addToHistory } = useUserData();
 
@@ -60,6 +61,7 @@ export default function Watch() {
 
   useEffect(() => {
     dispatch(setSidebarOpen(false));
+    dispatch(setTheaterMode(false));
   }, [dispatch]);
   const playerContainerRef = useRef(null);
 
@@ -84,13 +86,13 @@ export default function Watch() {
   if (isError || !video) return <ErrorMessage message="Failed to load video." />;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-0 lg:gap-6 lg:px-4 lg:py-4 max-w-[1800px] mx-auto">
+    <div className={`flex flex-col gap-0 max-w-[1800px] mx-auto ${theaterMode ? '' : 'lg:flex-row lg:gap-6 lg:px-4 lg:py-4'}`}>
 
       {/* ── LEFT: Player + Info + Comments ── */}
       <div className="flex-1 min-w-0">
 
-        {/* Player — edge-to-edge on mobile, rounded on desktop */}
-        <div ref={playerContainerRef} className="w-full aspect-video bg-black">
+        {/* Player */}
+        <div ref={playerContainerRef} className={`w-full bg-black ${theaterMode ? '' : 'aspect-video lg:rounded-xl overflow-hidden'}`}>
           <div
             className={
               isPip
@@ -123,8 +125,8 @@ export default function Watch() {
         </div>
       </div>
 
-      {/* ── RIGHT: Recommended videos or Playlist Queue ── */}
-      <div className="w-full lg:w-[400px] xl:w-[420px] flex-shrink-0 px-3 sm:px-4 lg:px-0 pb-4">
+      {/* RIGHT: Recommended videos or Playlist Queue */}
+      <div className={`w-full flex-shrink-0 px-3 sm:px-4 lg:px-0 pb-4 ${theaterMode ? 'lg:hidden' : 'lg:w-[400px] xl:w-[420px]'}`}>
         {playlistId && (
           <PlaylistQueue
             playlistId={playlistId}
