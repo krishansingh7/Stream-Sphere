@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect, useId } from 'react';
+import { useRef, useState, useCallback, useEffect, useId, forwardRef, useImperativeHandle } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleTheaterMode } from '../../store/slices/uiSlice';
 import { useYouTubePlayer } from '../../hooks/utils/useYouTubePlayer';
@@ -30,7 +30,7 @@ const SettingsIcon = () => <svg className="w-full h-full" viewBox="0 0 24 24" fi
 const LoopIcon = () => <svg className="w-full h-full" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8zm-1 11v-1H9v1h2zm4 0v-1h-2v1h2zm-2-7v4h1l-1.5 1.5L11 13h1V9h1z"/></svg>;
 const SubtitleIcon = () => <svg className="w-full h-full" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h8v2H6zm10 0h2v2h-2zm-6-4h8v2h-8z"/></svg>;
 
-export default function VideoPlayer({ videoId, onEnded }) {
+const VideoPlayer = forwardRef(function VideoPlayer({ videoId, onEnded }, ref) {
   const uid = useId().replace(/:/g, '');
   const containerId = `yt-player-${uid}`;
   const wrapRef = useRef(null);
@@ -40,6 +40,9 @@ export default function VideoPlayer({ videoId, onEnded }) {
   const theaterMode = useSelector(s => s.ui.theaterMode);
 
   const { ready, isPlaying, currentTime, duration, buffered, volume, muted, rate, quality, availableQualities, isLooping, isSubtitles, togglePlay, seek, setVolume, toggleMute, setRate, setQuality, toggleLoop, toggleSubtitles } = useYouTubePlayer({ videoId, containerId, onEnded });
+
+  // Expose play controls to parent via ref
+  useImperativeHandle(ref, () => ({ togglePlay, isPlaying }), [togglePlay, isPlaying]);
 
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -351,4 +354,6 @@ export default function VideoPlayer({ videoId, onEnded }) {
       </div>
     </div>
   );
-}
+});
+
+export default VideoPlayer;

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import VideoPlayer from "../../components/player/VideoPlayer";
 import { useUserData } from "../../context/UserDataContext";
@@ -14,6 +14,17 @@ export default function Playlist() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
+  const playerRef = useRef(null);
+
+  // Sync isPlaying state from the player ref
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (playerRef.current) {
+        setIsPlaying(playerRef.current.isPlaying);
+      }
+    }, 300);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (playlist.length > 0 && currentIndex >= playlist.length)
@@ -60,6 +71,7 @@ export default function Playlist() {
         <div className="relative w-full lg:flex-1 aspect-video lg:aspect-auto bg-black lg:rounded-xl overflow-hidden">
           {current && (
             <VideoPlayer
+              ref={playerRef}
               key={current.id}
               videoId={current.id}
               onEnded={handleEnded}
@@ -74,7 +86,7 @@ export default function Playlist() {
               <p className="text-sm font-semibold text-yt-text line-clamp-1">{current.title}</p>
               <p className="text-xs text-yt-text2 mt-0.5">{current.channelTitle} · {currentIndex + 1} of {playlist.length}</p>
             </div>
-            {/* Prev / Shuffle / Next / Repeat */}
+            {/* Shuffle | Prev | Play/Pause | Next | Repeat */}
             <div className="flex items-center justify-between">
               <button onClick={() => setIsShuffle(p => !p)} title="Shuffle" className={`p-2 rounded-full transition-colors ${isShuffle ? "text-yt-blue bg-blue-900/20" : "text-yt-text2 hover:bg-yt-bg3"}`}>
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
@@ -82,6 +94,19 @@ export default function Playlist() {
               <button onClick={goPrev} disabled={playlist.length <= 1} className="p-2 rounded-full text-yt-text hover:bg-yt-bg3 transition-colors disabled:opacity-30">
                 <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
               </button>
+
+              {/* Central Play/Pause button */}
+              <button
+                onClick={() => playerRef.current?.togglePlay?.()}
+                className="w-12 h-12 bg-yt-text text-yt-bg rounded-full flex items-center justify-center hover:scale-110 transition-transform shadow-md"
+              >
+                {isPlaying ? (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                ) : (
+                  <svg className="w-6 h-6 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                )}
+              </button>
+
               <button onClick={goNext} disabled={playlist.length <= 1} className="p-2 rounded-full text-yt-text hover:bg-yt-bg3 transition-colors disabled:opacity-30">
                 <svg className="w-7 h-7" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
               </button>
